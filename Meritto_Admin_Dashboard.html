@@ -1,0 +1,1767 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meritto Admin Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        function hideAllPanels() {
+            ['org-profile-form','manage-accounts-view','rename-tags-view'].forEach(function(id) {
+                var el = document.getElementById(id);
+                if (el) el.classList.remove('active');
+            });
+        }
+        function _showPanel(panelId, navLabel, accordionId) {
+            stgHome.style.display = 'none';
+            stgDetailWrap.classList.add('show');
+            stgBackBtn.classList.add('show');
+            hideAllPanels();
+            var p = document.getElementById(panelId);
+            if (p) p.classList.add('active');
+            document.querySelectorAll('.acc-item').forEach(function(i){ i.classList.remove('active'); });
+            document.querySelectorAll('.acc-item').forEach(function(item){
+                var lbl = item.querySelector('.acc-lbl');
+                if (lbl && lbl.textContent.trim() === navLabel) item.classList.add('active');
+            });
+            if (accordionId) {
+                var head = document.getElementById(accordionId);
+                var items = document.getElementById('items-' + accordionId);
+                if (head) head.classList.add('open');
+                if (items) items.classList.add('open');
+            }
+        }
+        function openOrgProfile(el) { _showPanel('org-profile-form', 'Organisation Profile', 'acc-general'); }
+        function openManageAccounts() { _showPanel('manage-accounts-view', 'Manage Accounts', 'acc-general'); }
+        function openRenameTagsView() { _showPanel('rename-tags-view', 'Rename Tags', 'acc-general'); }
+        function cancelToSettings() {
+            hideAllPanels();
+            stgDetailWrap.classList.remove('show');
+            stgBackBtn.classList.remove('show');
+            stgHome.style.display = 'grid';
+        }
+        function switchMaTab(el) {
+            el.closest('.ma-tabs').querySelectorAll('.ma-tab').forEach(function(t){ t.classList.remove('active'); });
+            el.classList.add('active');
+        }
+        function toggleRtSection(id) {
+            var sec = document.getElementById(id);
+            if (!sec) return;
+            var isOpen = sec.classList.toggle('open');
+            var ch = sec.querySelector('.rt-section-chevron');
+            if (ch) ch.textContent = isOpen ? '\u2227' : '\u2228';
+        }
+    </script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f6f8;
+            color: #333;
+        }
+
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ============ TOP NAV ============ */
+        .topnav {
+            height: 52px;
+            background: white;
+            border-bottom: 1px solid #e8eaee;
+            display: flex;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            flex-shrink: 0;
+        }
+
+        .tn-dark {
+            width: 200px;
+            min-width: 200px;
+            height: 100%;
+            background: #1a2236;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            gap: 10px;
+            transition: width 0.3s ease, min-width 0.3s ease;
+            overflow: hidden;
+        }
+
+        .tn-dark.collapsed {
+            width: 52px;
+            min-width: 52px;
+            padding: 0 6px;
+        }
+
+        .logo-chevrons {
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .logo-chevron {
+            width: 12px;
+            height: 12px;
+            fill: #e8452c;
+            flex-shrink: 0;
+        }
+
+        .logo-text {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-left: 6px;
+            white-space: nowrap;
+            transition: opacity 0.3s ease;
+        }
+
+        .tn-dark.collapsed .logo-text {
+            display: none;
+            opacity: 0;
+        }
+
+        .tn-light {
+            flex: 1;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 0 20px;
+            background: white;
+        }
+
+        .tn-nav-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .tn-nav-toggle:hover {
+            background: #f0f2f5;
+        }
+
+        .institute-selector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 12px;
+            background: #f0f2f5;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .institute-selector:hover {
+            background: #e8eaee;
+        }
+
+        .tn-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin-left: auto;
+        }
+
+        .ask-mio-btn {
+            background: linear-gradient(135deg, #7c3aed 0%, #a855f7 100%);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .ask-mio-btn:hover {
+            opacity: 0.9;
+        }
+
+        .tn-icon-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .tn-icon-btn:hover {
+            background: #f0f2f5;
+        }
+
+        .tn-icon-btn.has-notification::after {
+            content: '';
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+        }
+
+        .tn-avatar {
+            width: 32px;
+            height: 32px;
+            background: #4f8ef7;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        /* ============ MAIN LAYOUT ============ */
+        .layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* ============ SIDEBAR ============ */
+        .sidebar {
+            width: 200px;
+            min-width: 200px;
+            background: #1a2236;
+            overflow: hidden;
+            overflow-y: auto;
+            transition: width 0.3s ease, min-width 0.3s ease;
+        }
+
+        .sidebar.collapsed {
+            width: 52px;
+            min-width: 52px;
+        }
+
+        .sidebar-content {
+            padding: 8px 0;
+        }
+
+        .sb-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            color: #b4b9c4;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            text-decoration: none;
+            font-size: 14px;
+            white-space: nowrap;
+            border-left: 3px solid transparent;
+            overflow: hidden;
+        }
+
+        .sb-item:hover {
+            background: rgba(255, 255, 255, 0.08);
+            color: white;
+        }
+
+        .sb-item.active {
+            background: rgba(79, 142, 247, 0.15);
+            color: #4f8ef7;
+            border-left-color: #4f8ef7;
+        }
+
+        .sb-item-icon {
+            font-size: 18px;
+            flex-shrink: 0;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        .sb-item-label {
+            flex: 1;
+            transition: opacity 0.3s, width 0.3s;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .sidebar.collapsed .sb-item-label {
+            display: none;
+            opacity: 0;
+            width: 0;
+        }
+
+        .sidebar.collapsed .sb-item {
+            padding: 12px 6px;
+            justify-content: center;
+        }
+
+        .sb-tooltip {
+            display: none;
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #2d3748;
+            color: white;
+            padding: 6px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-left: 8px;
+            z-index: 1100;
+            white-space: nowrap;
+            pointer-events: none;
+        }
+
+        .sidebar.collapsed .sb-item:hover .sb-tooltip {
+            display: block;
+        }
+
+        /* ============ MAIN CONTENT ============ */
+        .main {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .page-header {
+            background: #f5f6f8;
+            padding: 16px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .page-header h1 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1a2236;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sync-btn {
+            background: none;
+            border: none;
+            color: #22c55e;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 6px;
+        }
+
+        .sync-info {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .btn-primary {
+            background: #4f8ef7;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-amber {
+            background: #f59e0b;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-orange {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        /* ============ STAT CARDS ============ */
+        .stat-cards {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e8eaee;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .stat-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .stat-badge {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .stat-badge.up {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .stat-badge.down {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1a2236;
+            margin-bottom: 8px;
+        }
+
+        .sparkline-container {
+            height: 24px;
+        }
+
+        /* ============ DASHBOARD GRID ============ */
+        .dashboard-row {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .dashboard-row.row-3col {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .dashboard-row.row-2col {
+            grid-template-columns: 1fr 2fr;
+        }
+
+        .card {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e8eaee;
+        }
+
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2236;
+            margin-bottom: 16px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 280px;
+        }
+
+        .comm-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .comm-stat {
+            text-align: center;
+        }
+
+        .comm-stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2236;
+        }
+
+        .comm-stat-label {
+            font-size: 11px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .channel-bars {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .channel-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .channel-label {
+            font-size: 12px;
+            color: #666;
+            min-width: 50px;
+        }
+
+        .channel-progress {
+            flex: 1;
+            height: 6px;
+            background: #f0f2f5;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .channel-fill {
+            height: 100%;
+            border-radius: 3px;
+        }
+
+        .channel-pct {
+            font-size: 12px;
+            font-weight: 600;
+            color: #333;
+            min-width: 35px;
+            text-align: right;
+        }
+
+        .mets-balance {
+            background: #f0f2f5;
+            padding: 10px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            text-align: center;
+        }
+
+        .mets-label {
+            color: #999;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+
+        .mets-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #1a2236;
+        }
+
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .activity-item {
+            background: #f0f2f5;
+            padding: 12px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .activity-value {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2236;
+        }
+
+        .activity-label {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        .recent-leads {
+            grid-column: 1 / 3;
+        }
+
+        .leads-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .leads-table th {
+            background: #f0f2f5;
+            padding: 10px;
+            text-align: left;
+            font-weight: 600;
+            color: #666;
+            border-bottom: 1px solid #e8eaee;
+        }
+
+        .leads-table td {
+            padding: 10px;
+            border-bottom: 1px solid #e8eaee;
+        }
+
+        .lead-name {
+            font-weight: 600;
+            color: #1a2236;
+        }
+
+        .stage-chip {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .stage-hot {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        .stage-new {
+            background: #dbeafe;
+            color: #0284c7;
+        }
+
+        .stage-warm {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .stage-applied {
+            background: #f3e8ff;
+            color: #a855f7;
+        }
+
+        .stage-cold {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .counsellor-avatar {
+            width: 28px;
+            height: 28px;
+            background: #4f8ef7;
+            border-radius: 50%;
+            font-size: 10px;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel-box {
+            background: white;
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid #e8eaee;
+        }
+
+        .panel-box .card-title {
+            margin-bottom: 12px;
+        }
+
+        .task-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e8eaee;
+            font-size: 12px;
+        }
+
+        .task-item:last-child {
+            border-bottom: none;
+        }
+
+        .task-text {
+            color: #666;
+        }
+
+        .task-text.overdue {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .activity-event {
+            padding: 8px 0;
+            border-bottom: 1px solid #e8eaee;
+            font-size: 12px;
+        }
+
+        .activity-event:last-child {
+            border-bottom: none;
+        }
+
+        .activity-time {
+            color: #999;
+            font-size: 11px;
+        }
+
+        .doughnut-container {
+            position: relative;
+            height: 280px;
+            margin-bottom: 16px;
+        }
+
+        .doughnut-legend {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            font-size: 12px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .pipeline-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .pipeline-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            min-width: 70px;
+        }
+
+        .pipeline-bar {
+            flex: 1;
+            height: 8px;
+            background: #e8eaee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .pipeline-fill {
+            height: 100%;
+            border-radius: 4px;
+        }
+
+        .pipeline-count {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a2236;
+            min-width: 40px;
+            text-align: right;
+        }
+
+        .counsellor-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #e8eaee;
+        }
+
+        .counsellor-item:last-child {
+            border-bottom: none;
+        }
+
+        .counsellor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .counsellor-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a2236;
+        }
+
+        .counsellor-stats {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .counsellor-mini-bar {
+            height: 4px;
+            background: #e8eaee;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .counsellor-mini-fill {
+            height: 100%;
+            border-radius: 2px;
+            background: #4f8ef7;
+        }
+
+        /* ============ SETTINGS VIEW ============ */
+        #settings-view {
+            position: fixed;
+            top: 52px;
+            left: 200px;
+            right: 0;
+            bottom: 0;
+            background: white;
+            z-index: 2000;
+            flex-direction: column;
+            transition: left 0.3s ease;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #settings-view.open {
+            display: flex;
+            visibility: visible;
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #settings-view.sidebar-collapsed {
+            left: 52px;
+        }
+
+        .stg-hdr {
+            height: 60px;
+            background: white;
+            border-bottom: 1px solid #e8eaee;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .stg-back-btn {
+            background: none;
+            border: none;
+            color: #333;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 6px;
+            display: none;
+        }
+
+        .stg-back-btn.show {
+            display: block;
+        }
+
+        .stg-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1a2236;
+        }
+
+        .stg-search {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 300px;
+            padding: 6px 12px;
+            background: #f0f2f5;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            transition: border-color 0.2s;
+        }
+
+        .stg-search:focus-within {
+            border-color: #4f8ef7;
+        }
+
+        .stg-search input {
+            flex: 1;
+            background: none;
+            border: none;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .stg-search-hint {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .stg-btn-customize {
+            background: none;
+            border: 1px solid #e8eaee;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            color: #333;
+            transition: border-color 0.2s;
+        }
+
+        .stg-btn-customize:hover {
+            border-color: #999;
+        }
+
+        .stg-btn-save {
+            background: #4f8ef7;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            display: none;
+        }
+
+        .stg-btn-save.show {
+            display: block;
+        }
+
+        .stg-close-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 6px;
+            color: #666;
+        }
+
+        .stg-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .stg-home {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .stg-card {
+            background: white;
+            border: 1px solid #e8eaee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .stg-card-hdr {
+            padding: 12px 16px;
+            border-bottom: 1px solid #e8eaee;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stg-card-icon {
+            font-size: 18px;
+        }
+
+        .stg-card-title {
+            flex: 1;
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2236;
+        }
+
+        .stg-card-badge {
+            background: #f0f2f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .stg-card-items {
+            padding: 8px 0;
+            font-size: 12px;
+        }
+
+        .stg-card-item {
+            padding: 8px 16px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .stg-card-item:hover {
+            background: #f9fafb;
+        }
+
+        .stg-item-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .stg-item-dot.configured {
+            background: #22c55e;
+        }
+
+        .stg-item-dot.pending {
+            background: #f59e0b;
+        }
+
+        .stg-item-dot.inactive {
+            background: #d1d5db;
+        }
+
+        .stg-card-footer {
+            padding: 10px 16px;
+            border-top: 1px solid #e8eaee;
+            font-size: 11px;
+            color: #999;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .stg-detail-wrap {
+            display: none;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .stg-detail-wrap.show {
+            display: flex;
+        }
+
+        .stg-detail-nav {
+            width: 240px;
+            border-right: 1px solid #e8eaee;
+            overflow-y: auto;
+            background: #f9fafb;
+            flex-shrink: 0;
+        }
+
+        .acc-category {
+            border-bottom: 1px solid #e8eaee;
+        }
+
+        .acc-header {
+            padding: 12px 16px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            color: #1a2236;
+            background: white;
+            border: none;
+            width: 100%;
+            text-align: left;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .acc-header:hover {
+            background: #f0f2f5;
+        }
+
+        .acc-toggle {
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .acc-category.open .acc-toggle {
+            transform: rotate(180deg);
+        }
+
+        .acc-items {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: #f9fafb;
+        }
+
+        .acc-category.open .acc-items {
+            max-height: 400px;
+        }
+
+        .acc-item {
+            padding: 0 16px 0 52px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #666;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-bottom: 1px solid #e8eaee;
+        }
+
+        .acc-item:hover {
+            background: #f0f2f5;
+        }
+
+        .acc-item.active {
+            color: #4f8ef7;
+            background: #f0f6ff;
+        }
+
+        .acc-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .acc-lbl {
+            flex: 1;
+        }
+
+        .stg-detail-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .stg-section {
+            margin-bottom: 24px;
+        }
+
+        .stg-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a2236;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e8eaee;
+        }
+
+        .stg-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #e8eaee;
+        }
+
+        .stg-row:last-child {
+            border-bottom: none;
+        }
+
+        .stg-row-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stg-row-icon {
+            font-size: 16px;
+        }
+
+        .stg-row-text {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .stg-row-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: #1a2236;
+        }
+
+        .stg-row-desc {
+            font-size: 11px;
+            color: #999;
+        }
+
+        .stg-row-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stg-status {
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .stg-status.configured {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .stg-status.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .stg-status.inactive {
+            background: #f3f4f6;
+            color: #6b7280;
+        }
+
+        .stg-row-btn {
+            background: none;
+            border: 1px solid #4f8ef7;
+            color: #4f8ef7;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .stg-row-btn:hover {
+            background: #4f8ef7;
+            color: white;
+        }
+
+        .stg-toggle {
+            width: 40px;
+            height: 22px;
+            background: #d1d5db;
+            border: none;
+            border-radius: 11px;
+            cursor: pointer;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .stg-toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: left 0.2s;
+        }
+
+        .stg-toggle.on {
+            background: #22c55e;
+        }
+
+        .stg-toggle.on::after {
+            left: 20px;
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #d1d5db;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #9ca3af;
+        }
+    
+        #manage-accounts-view{display:none;flex:1;flex-direction:column;overflow:hidden}
+        #manage-accounts-view.active{display:flex}
+        .ma-header{background:#fff;border-bottom:1px solid #e8eaee;padding:16px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+        .ma-title{font-size:17px;font-weight:700;color:#111827}
+        .ma-header-actions{display:flex;gap:10px}
+        .ma-icon-btn{width:34px;height:34px;border:1.5px solid #e4e6ea;border-radius:7px;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;color:#6b7280}
+        .ma-icon-btn:hover{background:#f5f6f8}
+        .ma-tabs{background:#fff;border-bottom:1px solid #e8eaee;padding:0 28px;display:flex;flex-shrink:0}
+        .ma-tab{padding:11px 16px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent}
+        .ma-tab.active{color:#4f8ef7;border-bottom-color:#4f8ef7;font-weight:600}
+        .ma-body{flex:1;overflow:auto;background:#fff;min-height:0}
+        .ma-table{width:100%;min-width:900px;border-collapse:collapse}
+        .ma-table thead tr{background:#f5f6f9;border-bottom:1.5px solid #e8eaee}
+        .ma-table th{padding:11px 16px;font-size:11.5px;font-weight:700;color:#6b7280;text-align:left;white-space:nowrap;text-transform:uppercase}
+        .ma-table tbody tr{border-bottom:1px solid #f3f4f6;cursor:pointer}
+        .ma-table tbody tr:hover{background:#f8f9ff}
+        .ma-table td{padding:14px 16px;font-size:13px;color:#374151;vertical-align:middle}
+        .ma-td-name{font-weight:600;color:#111827}
+        .ma-status-badge{display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;color:#16a34a;font-size:12px;font-weight:600;padding:4px 10px;border-radius:20px;border:1px solid #bbf7d0}
+        .ma-status-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#22c55e}
+        .ma-action-btn{background:none;border:none;cursor:pointer;color:#9ca3af;font-size:18px;padding:4px 8px;border-radius:5px;letter-spacing:1px}
+        .ma-footer{background:#fff;border-top:1px solid #e8eaee;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+        .ma-footer-copy{font-size:11.5px;color:#9ca3af}
+        .ma-footer-social{display:flex;gap:10px}
+        .ma-social-icon{width:26px;height:26px;border:1px solid #e4e6ea;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6b7280;cursor:pointer;text-decoration:none}
+
+        #rename-tags-view{display:none;flex:1;flex-direction:column;overflow:hidden;background:#f5f6f9}
+        #rename-tags-view.active{display:flex}
+        .rt-header{background:#fff;border-bottom:1px solid #e8eaee;padding:20px 28px 0;flex-shrink:0}
+        .rt-header-row{display:flex;align-items:flex-start;justify-content:space-between}
+        .rt-title{font-size:16px;font-weight:700;color:#111827;margin-bottom:3px}
+        .rt-subtitle{font-size:12px;color:#6b7280;margin-bottom:12px}
+        .rt-tab-line{width:50px;height:2px;background:#4f8ef7;border-radius:2px}
+        .rt-collapse-btn{width:28px;height:28px;border:1.5px solid #e4e6ea;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;font-size:13px;flex-shrink:0}
+        .rt-body{flex:1;overflow-y:auto;padding:20px 28px}
+        .rt-section{background:#fff;border:1px solid #e8eaee;border-radius:10px;margin-bottom:12px;overflow:hidden}
+        .rt-section-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;cursor:pointer;user-select:none}
+        .rt-section-head:hover{background:#fafbff}
+        .rt-section-name{font-size:14px;font-weight:600;color:#111827}
+        .rt-section-chevron{color:#9ca3af;font-size:16px;transition:transform .2s}
+        .rt-section.open .rt-section-chevron{transform:rotate(180deg)}
+        .rt-section-body{display:none;border-top:1px solid #f3f4f6}
+        .rt-section.open .rt-section-body{display:block}
+        .rt-table{width:100%;border-collapse:collapse}
+        .rt-table thead tr{background:#f8f9fb}
+        .rt-table th{padding:11px 20px;font-size:12.5px;font-weight:700;color:#374151;text-align:left;border-bottom:1px solid #f0f2f5}
+        .rt-table td{padding:14px 20px;font-size:13.5px;color:#374151;vertical-align:middle}
+        .rt-input{width:100%;max-width:300px;height:36px;border:1.5px solid #e4e6ea;border-radius:7px;padding:0 12px;font-size:13px;color:#374151;background:#f9fafb;outline:none;font-family:inherit}
+        .rt-input:focus{border-color:#4f8ef7;background:#fff}
+        .rt-save-btn{height:34px;padding:0 20px;border-radius:17px;border:none;background:#4f8ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+        #org-profile-form{display:none;flex:1;flex-direction:column;overflow:hidden;background:#f8f9fb}
+        #org-profile-form.active{display:flex}
+        .org-form-header{background:#fff;border-bottom:1px solid #e8eaee;padding:20px 28px 12px;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between}
+        .org-form-title{font-size:16px;font-weight:700;color:#111827;margin-bottom:4px}
+        .org-form-subtitle{font-size:12px;color:#6b7280}
+        .org-form-collapse{width:28px;height:28px;border:1.5px solid #e4e6ea;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;font-size:13px}
+        .org-form-body{flex:1;overflow-y:auto;padding:0 28px 80px}
+        .org-form-group{background:#fff;border:1px solid #e8eaee;border-radius:10px;margin-bottom:14px;overflow:hidden}
+        .org-form-group-title{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.07em;padding:14px 20px 10px;border-bottom:1px solid #f0f2f5;background:#fafafa}
+        .org-field{display:flex;align-items:center;padding:14px 20px;border-bottom:1px solid #f3f4f6;gap:20px}
+        .org-field:last-child{border-bottom:none}
+        .org-field:hover{background:#fafbff}
+        .org-field.align-top{align-items:flex-start;padding-top:16px}
+        .org-field-label{width:200px;min-width:200px;font-size:13px;font-weight:500;color:#374151;flex-shrink:0}
+        .org-field-label .req{color:#ef4444;margin-left:2px}
+        .org-field-input{flex:1;min-width:0}
+        .org-input{width:100%;max-width:520px;height:38px;border:1.5px solid #e4e6ea;border-radius:7px;padding:0 12px;font-size:13px;color:#111827;background:#fff;outline:none;font-family:inherit}
+        .org-input:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.1)}
+        .org-input::placeholder{color:#b0b8c8}
+        .org-textarea{width:100%;max-width:520px;min-height:80px;border:1.5px solid #e4e6ea;border-radius:7px;padding:10px 12px;font-size:13px;color:#111827;background:#fff;outline:none;resize:vertical;font-family:inherit}
+        .org-select-wrap{position:relative;max-width:520px}
+        .org-select{width:100%;height:38px;border:1.5px solid #e4e6ea;border-radius:7px;padding:0 36px 0 12px;font-size:13px;color:#111827;background:#fff;outline:none;appearance:none;cursor:pointer;font-family:inherit}
+        .org-select-wrap::after{content:'';position:absolute;right:13px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #6b7280;pointer-events:none}
+        .org-form-footer{position:sticky;bottom:0;background:#fff;border-top:1px solid #e8eaee;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+        .org-footer-note{font-size:12px;color:#9ca3af}
+        .org-footer-actions{display:flex;gap:10px}
+        .org-cancel-btn{height:36px;padding:0 18px;border-radius:18px;border:1.5px solid #e4e6ea;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer}
+        .org-save-btn{height:36px;padding:0 22px;border-radius:18px;border:none;background:#4f8ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
+
+        .stg-detail-wrap #org-profile-form,
+        .stg-detail-wrap #manage-accounts-view,
+        .stg-detail-wrap #rename-tags-view { flex:1; min-width:0; }
+
+        /* Nav item dots */
+        .acc-dot { width:7px;height:7px;border-radius:50%;background:#e5e7eb;flex-shrink:0; }
+        .acc-item.active .acc-dot { background:#4f8ef7; }
+</style>
+</head>
+<body>
+    <nav class="topnav">
+        <div class="tn-dark" id="tnDark">
+            <div class="logo-chevrons">
+                <svg class="logo-chevron" viewBox="0 0 12 12" fill="none">
+                    <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <svg class="logo-chevron" viewBox="0 0 12 12" fill="none">
+                    <path d="M4 2L8 6L4 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <span class="logo-text">meritto</span>
+        </div>
+        <div class="tn-light">
+            <button class="tn-nav-toggle" id="sidebarToggle">☰</button>
+            <div class="institute-selector"><span>🏛</span><span>ABES Engineering College</span><span>▼</span></div>
+            <div class="tn-right">
+                <button class="ask-mio-btn">✦ Ask Mio AI</button>
+                <button class="tn-icon-btn" id="settingsBtn">⚙️</button>
+                <button class="tn-icon-btn">❓</button>
+                <button class="tn-icon-btn has-notification">🔔</button>
+                <div class="tn-avatar"></div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="layout">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-content">
+                <a class="sb-item active" href="#"><span class="sb-item-icon">👤</span><span class="sb-item-label">Lead Management</span><span class="sb-tooltip">Lead Management</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">📋</span><span class="sb-item-label">Application Manager</span><span class="sb-tooltip">Application Manager</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🎯</span><span class="sb-item-label">Opportunity List</span><span class="sb-tooltip">Opportunity List</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🔭</span><span class="sb-item-label">Prospecta</span><span class="sb-tooltip">Prospecta</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🏫</span><span class="sb-item-label">Exam Ecosystem</span><span class="sb-tooltip">Exam Ecosystem</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">📅</span><span class="sb-item-label">Calendar Pro — Events</span><span class="sb-tooltip">Calendar Pro — Events</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">✅</span><span class="sb-item-label">Todo List</span><span class="sb-tooltip">Todo List</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🗃️</span><span class="sb-item-label">Archival</span><span class="sb-tooltip">Archival</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">💬</span><span class="sb-item-label">Applicant Feedbacks</span><span class="sb-tooltip">Applicant Feedbacks</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🏢</span><span class="sb-item-label">Center</span><span class="sb-tooltip">Center</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🧪</span><span class="sb-item-label">Test Admin View</span><span class="sb-tooltip">Test Admin View</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">⚡</span><span class="sb-item-label">Automation</span><span class="sb-tooltip">Automation</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">📣</span><span class="sb-item-label">Campaign Dashboard</span><span class="sb-tooltip">Campaign Dashboard</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">📡</span><span class="sb-item-label">Echo</span><span class="sb-tooltip">Echo</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🧾</span><span class="sb-item-label">Purchase Summary</span><span class="sb-tooltip">Purchase Summary</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">↩️</span><span class="sb-item-label">Withdrawal Request Mgr</span><span class="sb-tooltip">Withdrawal Request Mgr</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🎫</span><span class="sb-item-label">QMS</span><span class="sb-tooltip">QMS</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">📊</span><span class="sb-item-label">Reports and Analytics</span><span class="sb-tooltip">Reports and Analytics</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">📈</span><span class="sb-item-label">Communication Performance</span><span class="sb-tooltip">Communication Performance</span></a>
+                <a class="sb-item" href="#"><span class="sb-item-icon">🏷️</span><span class="sb-item-label">Manage Scorecard</span><span class="sb-tooltip">Manage Scorecard</span></a>
+            </div>
+        </aside>
+
+        <main class="main">
+            <div class="page-header">
+                <h1>Admin Dashboard</h1>
+                <div class="header-right">
+                    <button class="sync-btn">⟳</button>
+                    <span class="sync-info">Last Synced at / 18 May 2026 16:10 PM</span>
+                    <button class="btn-primary">✏ Edit Layout</button>
+                    <button class="btn-amber">+ Add Dashlet</button>
+                    <button class="btn-orange">+ Add</button>
+                </div>
+            </div>
+
+            <div class="stat-cards">
+                <div class="stat-card"><div class="stat-header"><div class="stat-label"><span>👤</span><span>Total Leads</span></div><span class="stat-badge up">↑14.2%</span></div><div class="stat-value">3,847</div><div class="sparkline-container"><canvas id="sparkline1"></canvas></div></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-label"><span>📋</span><span>Applications</span></div><span class="stat-badge up">↑8.7%</span></div><div class="stat-value">1,204</div><div class="sparkline-container"><canvas id="sparkline2"></canvas></div></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-label"><span>🎓</span><span>Enrolments</span></div><span class="stat-badge down">↓3.1%</span></div><div class="stat-value">489</div><div class="sparkline-container"><canvas id="sparkline3"></canvas></div></div>
+                <div class="stat-card"><div class="stat-header"><div class="stat-label"><span>💳</span><span>Payments</span></div><span class="stat-badge up">↑21.5%</span></div><div class="stat-value">₹42.8L</div><div class="sparkline-container"><canvas id="sparkline4"></canvas></div></div>
+            </div>
+
+            <div class="dashboard-row row-3col">
+                <div class="card"><div class="card-title">Lead-to-Enrolment Funnel</div><div class="chart-container"><canvas id="funnelChart"></canvas></div></div>
+                <div class="card"><div class="card-title">Communication</div><div class="comm-stats"><div class="comm-stat"><div class="comm-stat-value">18,432</div><div class="comm-stat-label">Sent</div></div><div class="comm-stat"><div class="comm-stat-value">84.2%</div><div class="comm-stat-label">Delivery</div></div><div class="comm-stat"><div class="comm-stat-value">23.7%</div><div class="comm-stat-label">Open Rate</div></div></div><div class="channel-bars"><div class="channel-bar"><span class="channel-label">WA</span><div class="channel-progress"><div class="channel-fill" style="width: 92%; background: #25d366;"></div></div><span class="channel-pct">92%</span></div><div class="channel-bar"><span class="channel-label">Email</span><div class="channel-progress"><div class="channel-fill" style="width: 78%; background: #0ea5e9;"></div></div><span class="channel-pct">78%</span></div><div class="channel-bar"><span class="channel-label">SMS</span><div class="channel-progress"><div class="channel-fill" style="width: 81%; background: #f59e0b;"></div></div><span class="channel-pct">81%</span></div><div class="channel-bar"><span class="channel-label">AI Call</span><div class="channel-progress"><div class="channel-fill" style="width: 45%; background: #8b5cf6;"></div></div><span class="channel-pct">45%</span></div></div><div class="mets-balance"><div class="mets-label">METS Balance</div><div class="mets-value">1,24,320</div></div></div>
+                <div class="card"><div class="card-title">Module Activity</div><div class="activity-grid"><div class="activity-item"><div class="activity-value">12</div><div class="activity-label">Active Campaigns</div></div><div class="activity-item"><div class="activity-value">847</div><div class="activity-label">Automations</div></div><div class="activity-item"><div class="activity-value">63</div><div class="activity-label">Slots Booked</div></div><div class="activity-item"><div class="activity-value">38</div><div class="activity-label">Active Users</div></div><div class="activity-item"><div class="activity-value">7</div><div class="activity-label">Open Tickets</div></div><div class="activity-item"><div class="activity-value">2148</div><div class="activity-label">Audit Events</div></div></div></div>
+            </div>
+
+            <div class="dashboard-row row-2col">
+                <div class="card recent-leads"><div class="card-title">Recent Leads</div><table class="leads-table"><thead><tr><th>Name</th><th>Stage</th><th>Counsellor</th></tr></thead><tbody><tr><td class="lead-name">Ananya Sharma</td><td><span class="stage-chip stage-hot">Hot</span></td><td><div class="counsellor-avatar">AS</div></td></tr><tr><td class="lead-name">Priyank Mehta</td><td><span class="stage-chip stage-new">New</span></td><td><div class="counsellor-avatar">PM</div></td></tr><tr><td class="lead-name">Ritika Joshi</td><td><span class="stage-chip stage-warm">Warm</span></td><td><div class="counsellor-avatar">RJ</div></td></tr><tr><td class="lead-name">Suresh Nair</td><td><span class="stage-chip stage-applied">Applied</span></td><td><div class="counsellor-avatar">SN</div></td></tr><tr><td class="lead-name">Kavya Reddy</td><td><span class="stage-chip stage-cold">Cold</span></td><td><div class="counsellor-avatar">KR</div></td></tr><tr><td class="lead-name">Arjun Kapoor</td><td><span class="stage-chip stage-hot">Hot</span></td><td><div class="counsellor-avatar">AK</div></td></tr><tr><td class="lead-name">Deepika Verma</td><td><span class="stage-chip stage-warm">Warm</span></td><td><div class="counsellor-avatar">DV</div></td></tr><tr><td class="lead-name">Vikram Singh</td><td><span class="stage-chip stage-new">New</span></td><td><div class="counsellor-avatar">VS</div></td></tr></tbody></table></div>
+                <div class="side-panel"><div class="panel-box"><div class="card-title">My Tasks</div><div class="task-item"><div class="task-text">Follow up with Ananya</div></div><div class="task-item"><div class="task-text overdue">Review Priyank documents</div></div><div class="task-item"><div class="task-text">Schedule counselling session</div></div><div class="task-item"><div class="task-text overdue">Update lead scores</div></div><div class="task-item"><div class="task-text">Prepare campaign analytics</div></div></div><div class="panel-box"><div class="card-title">Recent Activity</div><div class="activity-event"><div class="task-text">Lead assigned to Priyank</div><div class="activity-time">2 hours ago</div></div><div class="activity-event"><div class="task-text">Campaign sent to 50 leads</div><div class="activity-time">4 hours ago</div></div><div class="activity-event"><div class="task-text">Automation triggered</div><div class="activity-time">6 hours ago</div></div><div class="activity-event"><div class="task-text">Payment received from Ananya</div><div class="activity-time">1 day ago</div></div><div class="activity-event"><div class="task-text">System backup completed</div><div class="activity-time">2 days ago</div></div><div class="activity-event"><div class="task-text">New leads imported</div><div class="activity-time">3 days ago</div></div></div></div>
+            </div>
+
+            <div class="dashboard-row row-3col">
+                <div class="card"><div class="card-title">Lead Sources</div><div class="doughnut-container"><canvas id="doughnutChart"></canvas></div><div class="doughnut-legend"><div class="legend-item"><div class="legend-dot" style="background: #3b82f6;"></div><span>Google Ads 34%</span></div><div class="legend-item"><div class="legend-dot" style="background: #10b981;"></div><span>WhatsApp 22%</span></div><div class="legend-item"><div class="legend-dot" style="background: #f59e0b;"></div><span>Facebook 18%</span></div><div class="legend-item"><div class="legend-dot" style="background: #8b5cf6;"></div><span>Organic 14%</span></div><div class="legend-item"><div class="legend-dot" style="background: #ec4899;"></div><span>Referral 8%</span></div><div class="legend-item"><div class="legend-dot" style="background: #6b7280;"></div><span>Others 4%</span></div></div></div>
+                <div class="card"><div class="card-title">Stage Pipeline</div><div class="pipeline-item"><span class="pipeline-label">New</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 60%; background: #3b82f6;"></div></div><span class="pipeline-count">842</span></div><div class="pipeline-item"><span class="pipeline-label">Hot</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 44%; background: #ef4444;"></div></div><span class="pipeline-count">614</span></div><div class="pipeline-item"><span class="pipeline-label">Warm</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 38%; background: #f59e0b;"></div></div><span class="pipeline-count">527</span></div><div class="pipeline-item"><span class="pipeline-label">Cold</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 23%; background: #9ca3af;"></div></div><span class="pipeline-count">318</span></div><div class="pipeline-item"><span class="pipeline-label">Applied</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 35%; background: #8b5cf6;"></div></div><span class="pipeline-count">489</span></div><div class="pipeline-item"><span class="pipeline-label">Enrolled</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 18%; background: #10b981;"></div></div><span class="pipeline-count">246</span></div></div>
+                <div class="card"><div class="card-title">Counsellor Performance</div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Priyank Mehta</span><span class="counsellor-stats">28 leads | 15 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 85%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Ritika Joshi</span><span class="counsellor-stats">24 leads | 12 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 75%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Suresh Nair</span><span class="counsellor-stats">32 leads | 18 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 95%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Kavya Reddy</span><span class="counsellor-stats">20 leads | 8 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 55%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Arjun Kapoor</span><span class="counsellor-stats">26 leads | 14 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 80%;"></div></div></div></div>
+            </div>
+        </main>
+    </div>
+
+    <div id="settings-view">
+        <div class="stg-hdr">
+            <button class="stg-back-btn" id="stgBackBtn">←</button>
+            <div class="stg-title">Settings</div>
+            <div class="stg-search"><input type="text" placeholder="Search Settings"><span class="stg-search-hint">⌘K</span></div>
+            <button class="stg-btn-customize">Customize Settings</button>
+            <button class="stg-btn-save" id="stgSaveBtn">Save changes</button>
+            <button class="stg-close-btn" id="stgCloseBtn">✕</button>
+        </div>
+        <div class="stg-body">
+            <div class="stg-home" id="stgHome">
+                <div class="stg-card"><div class="stg-card-hdr"><span class="stg-card-icon">&#127962;&#65039;</span><span class="stg-card-title">Onboarding</span><span class="stg-card-badge">3</span></div><div class="stg-card-items"><div class="stg-card-item" onclick="openOrgProfile(null)"><span class="stg-item-dot configured"></span><span>Organisation Profile</span></div><div class="stg-card-item" onclick="openManageAccounts()"><span class="stg-item-dot configured"></span><span>Manage Accounts</span></div><div class="stg-card-item" onclick="openRenameTagsView()"><span class="stg-item-dot inactive"></span><span>Rename Tags</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-users', 'acc-users')"><div class="stg-card-hdr"><span class="stg-card-icon">👥</span><span class="stg-card-title">Users & Teams</span><span class="stg-card-badge">6</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>User Management</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Role Hierarchy</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Permission Groups</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Teams</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Counsellor Config</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Field Force Tracking</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-security', 'acc-security')"><div class="stg-card-hdr"><span class="stg-card-icon">🔐</span><span class="stg-card-title">Security & Compliance</span><span class="stg-card-badge">7</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Login Methods</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>SSO/SAML</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>TOTP Authenticator</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>IP Allowlist</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>PII Masking</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Audit Trail</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Grant Access</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-comms', 'acc-comms')"><div class="stg-card-hdr"><span class="stg-card-icon">💬</span><span class="stg-card-title">Communication</span><span class="stg-card-badge">7</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>WhatsApp National</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>WhatsApp International</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Meta WABA</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>SMS/OTP</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Email Provider</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Telephony/IVR</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Template Library</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-leads', 'acc-leads')"><div class="stg-card-hdr"><span class="stg-card-icon">🎯</span><span class="stg-card-title">Leads & Enrollment</span><span class="stg-card-badge">6</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Lead Stages</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Lead Allocation</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Lead Score Rules</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Registration Config</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Slot Booking</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Application TAT</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-marketing', 'acc-marketing')"><div class="stg-card-hdr"><span class="stg-card-icon">📣</span><span class="stg-card-title">Marketing</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Campaign Config</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Landing Pages</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Google Ads</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Meta/Facebook</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Referral Connect</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-integrations', 'acc-integrations')"><div class="stg-card-hdr"><span class="stg-card-icon">🔌</span><span class="stg-card-title">Integrations</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Connectors</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Webhooks</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>ERP Push</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>API Tokens</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Loan Partners</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-finance', 'acc-finance')"><div class="stg-card-hdr"><span class="stg-card-icon">💳</span><span class="stg-card-title">Finance</span><span class="stg-card-badge">4</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Fee Types</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Payment Gateways</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Discount Coupons</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Wallet & Ledger</span></div></div></div>
+                <div class="stg-card" onclick="openSection('sec-data', 'acc-data')"><div class="stg-card-hdr"><span class="stg-card-icon">🗂️</span><span class="stg-card-title">Data Administration</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Master Data/Taxonomy</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Tag Library</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Custom Activities</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Dynamic Reports</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Archival Rules</span></div></div></div>
+            </div>
+
+            <div class="stg-detail-wrap" id="stgDetailWrap">
+                <div class="stg-detail-nav"><div class="acc-category" id="acc-general"><button class="acc-header" onclick="toggleAccordion('acc-general', 'sec-account')">Onboarding<span class="acc-toggle">⌄</span></button><div class="acc-items" id="items-acc-general"><div class="acc-item active" onclick="openOrgProfile(this)"><span class="acc-dot"></span><span class="acc-lbl">Organisation Profile</span></div><div class="acc-item" onclick="openManageAccounts()"><span class="acc-dot"></span><span class="acc-lbl">Manage Accounts</span></div><div class="acc-item" onclick="openRenameTagsView()"><span class="acc-dot"></span><span class="acc-lbl">Rename Tags</span></div></div></div><div class="acc-category" id="acc-accsettings"><button class="acc-header" onclick="document.getElementById('acc-accsettings').classList.toggle('open');var it=document.getElementById('items-acc-accsettings');if(it)it.classList.toggle('open')">Account Settings<span class="acc-toggle">&#8964;</span></button><div class="acc-items" id="items-acc-accsettings"><div class="acc-item" onclick="openRenameTagsView()"><span class="acc-dot"></span><span class="acc-lbl">Rename Tags</span></div></div></div><div class="acc-category" id="acc-users"><button class="acc-header" onclick="toggleAccordion('acc-users', 'sec-users')">Users & Teams<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">User Management</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">Role Hierarchy</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Permission Groups</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Teams</span></div></div></div><div class="acc-category" id="acc-security"><button class="acc-header" onclick="toggleAccordion('acc-security', 'sec-security')">Security & Compliance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot configured"></span><span class="acc-lbl">Login Methods</span></div><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot pending"></span><span class="acc-lbl">SSO/SAML</span></div></div></div><div class="acc-category" id="acc-comms"><button class="acc-header" onclick="toggleAccordion('acc-comms', 'sec-comms')">Communication<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">WhatsApp National</span></div><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">Email Provider</span></div></div></div><div class="acc-category" id="acc-leads"><button class="acc-header" onclick="toggleAccordion('acc-leads', 'sec-leads')">Leads & Enrollment<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-leads')"><span class="acc-dot configured"></span><span class="acc-lbl">Lead Stages</span></div></div></div><div class="acc-category" id="acc-marketing"><button class="acc-header" onclick="toggleAccordion('acc-marketing', 'sec-marketing')">Marketing<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-marketing')"><span class="acc-dot configured"></span><span class="acc-lbl">Campaign Config</span></div></div></div><div class="acc-category" id="acc-integrations"><button class="acc-header" onclick="toggleAccordion('acc-integrations', 'sec-integrations')">Integrations<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-integrations')"><span class="acc-dot configured"></span><span class="acc-lbl">API Tokens</span></div></div></div><div class="acc-category" id="acc-finance"><button class="acc-header" onclick="toggleAccordion('acc-finance', 'sec-finance')">Finance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-finance')"><span class="acc-dot configured"></span><span class="acc-lbl">Payment Gateways</span></div></div></div><div class="acc-category" id="acc-data"><button class="acc-header" onclick="toggleAccordion('acc-data', 'sec-data')">Data Administration<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-data')"><span class="acc-dot configured"></span><span class="acc-lbl">Master Data</span></div></div></div></div>
+                <div class="stg-detail-content"></div>
+                <div id="org-profile-form">
+                  <div class="org-form-header">
+                    <div><div class="org-form-title">Organization Details</div><div class="org-form-subtitle">Configure the basic details of the Organization like Name, Logo and Address</div></div>
+                    <button class="org-form-collapse" onclick="cancelToSettings()">↑</button>
+                  </div>
+                  <div class="org-form-body">
+                    <div class="org-form-group"><div class="org-form-group-title">Basic Information</div>
+                      <div class="org-field"><div class="org-field-label">Slogan</div><div class="org-field-input"><input class="org-input" placeholder="Enter Account Slogan"></div></div>
+                      <div class="org-field"><div class="org-field-label">Email</div><div class="org-field-input"><input class="org-input" type="email" placeholder="Enter Email"></div></div>
+                      <div class="org-field"><div class="org-field-label">Account Website <span class="req">*</span></div><div class="org-field-input"><input class="org-input" type="url" value="https://avit.ac.in/"></div></div>
+                      <div class="org-field"><div class="org-field-label">Phone Number <span class="req">*</span></div><div class="org-field-input"><input class="org-input" type="tel" value="87654323456"></div></div>
+                    </div>
+                    <div class="org-form-group"><div class="org-form-group-title">Location</div>
+                      <div class="org-field"><div class="org-field-label">Country <span class="req">*</span></div><div class="org-field-input"><div class="org-select-wrap"><select class="org-select"><option>India</option></select></div></div></div>
+                      <div class="org-field"><div class="org-field-label">State <span class="req">*</span></div><div class="org-field-input"><div class="org-select-wrap"><select class="org-select"><option>Tamil Nadu</option></select></div></div></div>
+                      <div class="org-field"><div class="org-field-label">City</div><div class="org-field-input"><div class="org-select-wrap"><select class="org-select"><option>Select City</option></select></div></div></div>
+                      <div class="org-field"><div class="org-field-label">Zip Code <span class="req">*</span></div><div class="org-field-input"><input class="org-input" value="603104"></div></div>
+                      <div class="org-field"><div class="org-field-label">Timezone <span class="req">*</span></div><div class="org-field-input"><div class="org-select-wrap"><select class="org-select"><option>(GMT 5:30) India Standard Time</option></select></div></div></div>
+                      <div class="org-field align-top"><div class="org-field-label" style="padding-top:8px">Address</div><div class="org-field-input"><textarea class="org-textarea" placeholder="Please provide the complete address of Account"></textarea></div></div>
+                    </div>
+                    <div class="org-form-group"><div class="org-form-group-title">Assets</div>
+                      <div class="org-field"><div class="org-field-label">Account Logo</div><div class="org-field-input" style="font-size:13px;color:#4f8ef7;cursor:pointer">logo_1731389429.png &#128065; ✕</div></div>
+                      <div class="org-field"><div class="org-field-label">Account Favicon</div><div class="org-field-input" style="font-size:13px;color:#4f8ef7;cursor:pointer">favicon_1730112251.png &#128065; ✕</div></div>
+                    </div>
+                    <div class="org-form-group"><div class="org-form-group-title">Formats</div>
+                      <div class="org-field"><div class="org-field-label">Date Format <span class="req">*</span></div><div class="org-field-input"><div class="org-select-wrap"><select class="org-select"><option>MM/DD/YYYY</option><option>DD/MM/YYYY</option></select></div></div></div>
+                      <div class="org-field"><div class="org-field-label">Time Format <span class="req">*</span></div><div class="org-field-input"><div class="org-select-wrap"><select class="org-select"><option>12 Hr format</option><option>24 Hr format</option></select></div></div></div>
+                    </div>
+                  </div>
+                  <div class="org-form-footer">
+                    <span class="org-footer-note">Fields marked <span style="color:#ef4444">*</span> are required</span>
+                    <div class="org-footer-actions">
+                      <button class="org-cancel-btn" onclick="cancelToSettings()">Cancel</button>
+                      <button class="org-save-btn">Save Changes</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Manage Accounts -->
+                <div id="manage-accounts-view">
+                  <div class="ma-header"><div class="ma-title">Manage Accounts</div><div class="ma-header-actions"><button class="ma-icon-btn">&#128269;</button><button class="ma-icon-btn">&#9874;&#65039;</button><button class="ma-icon-btn">&#11015;&#65039;</button></div></div>
+                  <div class="ma-tabs"><div class="ma-tab active" onclick="switchMaTab(this)">On-Boarded</div><div class="ma-tab" onclick="switchMaTab(this)">In-Process</div></div>
+                  <div class="ma-body"><table class="ma-table"><thead><tr><th>Account ID</th><th>Name</th><th>Account Manager</th><th>Vertical</th><th>Package</th><th>Selected Plan</th><th>Associate SPOC</th><th>Status</th><th>Created By</th><th>Action</th></tr></thead><tbody>
+                    <tr><td style="color:#6b7280">221</td><td class="ma-td-name">Demo</td><td>-</td><td>Higher Education</td><td>Application Automation Cloud</td><td>Pro</td><td>-</td><td><span class="ma-status-badge">Active</span></td><td>NA</td><td><button class="ma-action-btn">&#8943;</button></td></tr>
+                    <tr><td style="color:#6b7280">7142</td><td class="ma-td-name">Park Institutions</td><td>-</td><td>Higher Education</td><td>Enrollment Cloud</td><td>Starter</td><td>-</td><td><span class="ma-status-badge">Active</span></td><td>Imran</td><td><button class="ma-action-btn">&#8943;</button></td></tr>
+                    <tr><td style="color:#6b7280">5137</td><td class="ma-td-name">Prestige University</td><td>-</td><td>Higher Education</td><td>Enrollment Cloud</td><td>Standard</td><td>-</td><td><span class="ma-status-badge">Active</span></td><td>NA</td><td><button class="ma-action-btn">&#8943;</button></td></tr>
+                    <tr><td style="color:#6b7280">176</td><td class="ma-td-name">Testing Institute</td><td style="font-size:12px">Abhihek0000...<br>Chauhan0000...</td><td>Higher Education</td><td>Enrollment Cloud</td><td>Pro</td><td>-</td><td><span class="ma-status-badge">Active</span></td><td>NA</td><td><button class="ma-action-btn">&#8943;</button></td></tr>
+                  </tbody></table></div>
+                  <div class="ma-footer"><span class="ma-footer-copy">Copyright &copy; 2026 NoPaperForms Solutions Limited. All Rights Reserved</span><div class="ma-footer-social"><a class="ma-social-icon">in</a><a class="ma-social-icon">X</a><a class="ma-social-icon">f</a><a class="ma-social-icon">Y</a></div></div>
+                </div>
+
+                <!-- Rename Tags -->
+                <div id="rename-tags-view">
+                  <div class="rt-header"><div class="rt-header-row"><div><div class="rt-title">System Rename Configurations</div><div class="rt-subtitle">Configure the below settings to Rename Tabs and Labels</div></div><button class="rt-collapse-btn" onclick="cancelToSettings()">&#8593;</button></div><div class="rt-tab-line"></div></div>
+                  <div class="rt-body">
+                    <div class="rt-section open" id="rt-opp"><div class="rt-section-head" onclick="toggleRtSection('rt-opp')"><span class="rt-section-name">Opportunity</span><span class="rt-section-chevron">&#8743;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Opportunity</td><td><input class="rt-input" value="Opportunity"></td><td><input class="rt-input" value="Opportunities"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
+                    <div class="rt-section" id="rt-pay"><div class="rt-section-head" onclick="toggleRtSection('rt-pay')"><span class="rt-section-name">Payment</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Payment</td><td><input class="rt-input" value="Payment"></td><td><input class="rt-input" value="Payments"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
+                    <div class="rt-section" id="rt-app"><div class="rt-section-head" onclick="toggleRtSection('rt-app')"><span class="rt-section-name">Application</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Application</td><td><input class="rt-input" value="Application"></td><td><input class="rt-input" value="Applications"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
+                    <div class="rt-section" id="rt-appt"><div class="rt-section-head" onclick="toggleRtSection('rt-appt')"><span class="rt-section-name">Applicant</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Applicant</td><td><input class="rt-input" value="Applicant"></td><td><input class="rt-input" value="Applicants"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
+                    <div class="rt-section" id="rt-inst"><div class="rt-section-head" onclick="toggleRtSection('rt-inst')"><span class="rt-section-name">Institute</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Institute</td><td><input class="rt-input" value="Institute"></td><td><input class="rt-input" value="Institutes"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
+                  </div>
+                </div></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.getElementById('sidebar');
+        const tnDark = document.getElementById('tnDark');
+        const settingsView = document.getElementById('settings-view');
+
+        sidebarToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('collapsed');
+            tnDark.classList.toggle('collapsed');
+            settingsView.classList.toggle('sidebar-collapsed');
+        });
+
+        document.querySelectorAll('.sb-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        const settingsBtn = document.getElementById('settingsBtn');
+        const stgCloseBtn = document.getElementById('stgCloseBtn');
+        const stgBackBtn = document.getElementById('stgBackBtn');
+        const stgHome = document.getElementById('stgHome');
+        const stgDetailWrap = document.getElementById('stgDetailWrap');
+
+        settingsBtn.addEventListener('click', () => {
+            settingsView.classList.add('open');
+            // Sync sidebar collapse state if needed
+            if (sidebar.classList.contains('collapsed')) {
+                settingsView.classList.add('sidebar-collapsed');
+            } else {
+                settingsView.classList.remove('sidebar-collapsed');
+            }
+            stgHome.style.display = 'grid';
+            stgDetailWrap.classList.remove('show');
+            stgBackBtn.classList.remove('show');
+        });
+
+        stgCloseBtn.addEventListener('click', () => {
+            settingsView.classList.remove('open');
+        });
+
+        stgBackBtn.addEventListener('click', () => {
+            stgHome.style.display = 'grid';
+            stgDetailWrap.classList.remove('show');
+            stgBackBtn.classList.remove('show');
+        });
+
+        function openSection(sectionId, accordionId) {
+            if (sectionId === 'sec-account') { openOrgProfile(null); return; }
+            stgHome.style.display = 'none';
+            stgDetailWrap.classList.add('show');
+            stgBackBtn.classList.add('show');
+            document.querySelectorAll('.stg-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+            const accordion = document.getElementById(accordionId);
+            if (accordion && !accordion.classList.contains('open')) {
+                accordion.classList.add('open');
+                var accIt = document.getElementById('items-' + accordionId);
+                if (accIt) accIt.classList.add('open');
+            }
+        }
+
+        function toggleAccordion(accordionId, sectionId) {
+            var accordion = document.getElementById(accordionId);
+            if (accordion) accordion.classList.toggle('open');
+            var items = document.getElementById('items-' + accordionId);
+            if (items) items.classList.toggle('open');
+        }
+
+        function selectItem(el, sectionId) {
+            document.querySelectorAll('.acc-item').forEach(item => item.classList.remove('active'));
+            el.classList.add('active');
+            document.querySelectorAll('.stg-section').forEach(sec => sec.style.display = 'none');
+            document.getElementById(sectionId).style.display = 'block';
+        }
+
+        const sparklineConfig = {
+            type: 'line',
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { display: false } },
+                elements: { point: { radius: 0 } }
+            }
+        };
+
+        new Chart(document.getElementById('sparkline1'), {
+            ...sparklineConfig,
+            data: {
+                labels: ['', '', '', '', '', ''],
+                datasets: [{
+                    data: [100, 140, 120, 180, 160, 200],
+                    borderColor: '#4f8ef7',
+                    backgroundColor: 'rgba(79, 142, 247, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('sparkline2'), {
+            ...sparklineConfig,
+            data: {
+                labels: ['', '', '', '', '', ''],
+                datasets: [{
+                    data: [80, 100, 90, 130, 110, 150],
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('sparkline3'), {
+            ...sparklineConfig,
+            data: {
+                labels: ['', '', '', '', '', ''],
+                datasets: [{
+                    data: [50, 70, 65, 60, 55, 50],
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('sparkline4'), {
+            ...sparklineConfig,
+            data: {
+                labels: ['', '', '', '', '', ''],
+                datasets: [{
+                    data: [150, 180, 200, 250, 280, 320],
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            }
+        });
+
+        new Chart(document.getElementById('funnelChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Leads', 'Prospects', 'Qualified', 'Applications', 'Enrolled'],
+                datasets: [{
+                    label: 'Count',
+                    data: [3847, 2100, 1204, 700, 489],
+                    backgroundColor: '#4f8ef7'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                indexAxis: 'y',
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true }
+                }
+            }
+        });
+
+        new Chart(document.getElementById('doughnutChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Google Ads', 'WhatsApp', 'Facebook', 'Organic', 'Referral', 'Others'],
+                datasets: [{
+                    data: [34, 22, 18, 14, 8, 4],
+                    backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#6b7280']
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
