@@ -138,11 +138,14 @@
         }
 
         function rtViewRow(key, idx, row) {
-            return '<td style="color:#374151;font-size:13px">' + row.tag + '</td>' +
-                   '<td style="color:#374151;font-size:13px">' + row.singular + '</td>' +
-                   '<td style="color:#374151;font-size:13px">' + row.plural + '</td>' +
+            return '<td><span class="rt-tag-chip">' + row.tag + '</span></td>' +
+                   '<td class="rt-val-text">' + row.singular + '</td>' +
+                   '<td class="rt-val-text">' + row.plural + '</td>' +
                    '<td style="text-align:right">' +
-                     '<button class="rt-pencil-btn" onclick="rtEditRow(\'' + key + '\',' + idx + ')" title="Edit">&#9998;</button>' +
+                     '<button class="rt-edit-link" onclick="rtEditRow(\'' + key + '\',' + idx + ')">' +
+                       '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+                       'Edit' +
+                     '</button>' +
                    '</td>';
         }
 
@@ -150,13 +153,16 @@
             var row = RT_DATA[key][idx];
             var tbody = document.getElementById('rtb-' + key);
             var tr = tbody.querySelectorAll('tr')[idx];
+            tr.style.background = '#f5f8ff';
             tr.innerHTML =
-                '<td style="color:#374151;font-size:13px;font-weight:500">' + row.tag + '</td>' +
-                '<td><input class="rt-input" id="rt-sin-' + key + idx + '" value="' + row.singular + '"></td>' +
-                '<td><input class="rt-input" id="rt-plu-' + key + idx + '" value="' + row.plural + '"></td>' +
-                '<td style="white-space:nowrap;text-align:right">' +
-                  '<button class="rt-save-btn" onclick="rtSaveRow(\'' + key + '\',' + idx + ')">Save</button>' +
-                  '<span class="rt-cancel-link" onclick="rtRenderGroup(\'' + key + '\')">Cancel</span>' +
+                '<td><span class="rt-tag-chip">' + row.tag + '</span></td>' +
+                '<td><input class="rt-input" id="rt-sin-' + key + idx + '" value="' + row.singular + '" placeholder="Singular name"></td>' +
+                '<td><input class="rt-input" id="rt-plu-' + key + idx + '" value="' + row.plural + '" placeholder="Plural name"></td>' +
+                '<td>' +
+                  '<div class="rt-action-wrap">' +
+                    '<button class="rt-save-btn" onclick="rtSaveRow(\'' + key + '\',' + idx + ')">Save</button>' +
+                    '<button class="rt-cancel-btn" onclick="rtRenderGroup(\'' + key + '\')">Cancel</button>' +
+                  '</div>' +
                 '</td>';
             document.getElementById('rt-sin-' + key + idx).focus();
         }
@@ -1254,66 +1260,121 @@
 
         .stg-home {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
             padding: 24px;
-            background: #f0f2f7;
+            background: #eef0f6;
             min-height: 100%;
+            align-content: start;
         }
 
         .stg-card {
             background: #fff;
             border: none;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
-            box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
-            transition: box-shadow .15s;
-        }
-
-        .stg-card:hover {
-            box-shadow: 0 4px 16px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
-        }
-
-        .stg-card-hdr {
-            padding: 16px 20px 10px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.05);
+            transition: box-shadow .2s, transform .2s;
             display: flex;
-            align-items: center;
-            gap: 10px;
+            flex-direction: column;
+            position: relative;
         }
 
-        .stg-card-icon {
-            font-size: 20px;
+        /* Subtle top accent bar */
+        .stg-card::before {
+            content: '';
+            display: block;
+            height: 2px;
+            width: 100%;
+            background: var(--card-accent, #e5e7eb);
+            opacity: 0.5;
             flex-shrink: 0;
         }
 
+        .stg-card:hover {
+            box-shadow: 0 8px 28px rgba(0,0,0,.12), 0 0 0 1px rgba(0,0,0,.04);
+            transform: translateY(-2px);
+        }
+
+        .stg-card-hdr {
+            padding: 16px 18px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .stg-card-icon-wrap {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--card-icon-bg, #f3f4f6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 18px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.08);
+        }
+
+        .stg-card-icon { font-size: 18px; }
+
         .stg-card-title {
             flex: 1;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 700;
             color: #111827;
             letter-spacing: -.01em;
         }
 
+        .stg-card-count {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--card-accent-text, #6b7280);
+            background: var(--card-count-bg, #f3f4f6);
+            padding: 2px 7px;
+            border-radius: 20px;
+            flex-shrink: 0;
+        }
+
         .stg-card-badge { display: none; }
 
         .stg-card-items {
-            padding: 4px 0 14px;
+            padding: 6px 0 10px;
+            flex: 1;
         }
 
         .stg-card-item {
-            padding: 7px 20px;
+            padding: 7px 18px;
             color: #4b5563;
-            font-size: 13px;
+            font-size: 12.5px;
             display: flex;
             align-items: center;
+            gap: 8px;
             cursor: pointer;
-            transition: color .13s, background .13s;
-            border-radius: 0;
+            transition: color .13s, background .13s, padding-left .13s;
+            position: relative;
+        }
+
+        .stg-card-item::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            flex-shrink: 0;
+            transition: background .13s, transform .13s;
         }
 
         .stg-card-item:hover {
-            color: #2563eb;
-            background: #f5f8ff;
+            color: var(--card-accent-text, #2563eb);
+            background: var(--card-hover-bg, #f5f8ff);
+            padding-left: 22px;
+        }
+
+        .stg-card-item:hover::before {
+            background: var(--card-accent, #3b82f6);
+            transform: scale(1.3);
         }
 
         .stg-item-dot { display: none; }
@@ -1322,6 +1383,112 @@
         .stg-item-dot.inactive   { display: none; }
 
         .stg-card-footer { display: none; }
+
+        /* ── Customize mode ── */
+        .stg-customize-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            height: 32px;
+            padding: 0 14px;
+            border: 1.5px solid #e4e6ea;
+            border-radius: 8px;
+            background: #fff;
+            color: #374151;
+            font-size: 12.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all .15s;
+            white-space: nowrap;
+        }
+        .stg-customize-btn:hover { border-color: #4f8ef7; color: #4f8ef7; background: #eff6ff; }
+        .stg-customize-btn.active { background: #4f8ef7; color: #fff; border-color: #4f8ef7; }
+        .stg-customize-btn.active:hover { background: #3a7de6; }
+
+        .stg-customize-banner {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 28px;
+            background: #eff6ff;
+            border-bottom: 1px solid #bfdbfe;
+            font-size: 12.5px;
+            color: #1d4ed8;
+            flex-shrink: 0;
+        }
+        .stg-customize-banner.show { display: flex; }
+        .stg-customize-banner svg { flex-shrink: 0; }
+
+        /* Card in customize mode */
+        .stg-home.customize-mode .stg-card {
+            cursor: grab;
+            outline: 2px dashed transparent;
+            transition: box-shadow .15s, outline .15s, transform .15s;
+        }
+        .stg-home.customize-mode .stg-card:hover {
+            outline-color: #93c5fd;
+            box-shadow: 0 6px 20px rgba(79,142,247,.18);
+            transform: translateY(-2px);
+        }
+        .stg-home.customize-mode .stg-card.dragging {
+            opacity: .45;
+            cursor: grabbing;
+            transform: scale(.97);
+        }
+        .stg-home.customize-mode .stg-card.drag-over {
+            outline-color: #4f8ef7;
+            background: #f0f7ff;
+        }
+        /* In customize mode items are draggable, not clickable */
+        .stg-home.customize-mode .stg-card-item {
+            cursor: grab;
+            user-select: none;
+            padding-left: 12px;
+            justify-content: flex-start;
+            gap: 6px;
+        }
+        .stg-home.customize-mode .stg-card-item::after { display: none; }
+        .stg-home.customize-mode .stg-card-item:active { cursor: grabbing; }
+        .stg-home.customize-mode .stg-card-item.item-dragging {
+            opacity: .4;
+            background: #eff6ff;
+        }
+        .stg-home.customize-mode .stg-card-item.item-drag-over {
+            border-top: 2px solid #4f8ef7;
+            background: #f0f7ff;
+        }
+        /* Item grip */
+        .stg-item-grip {
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+            margin-right: 0;
+            flex-shrink: 0;
+        }
+        .stg-item-grip span { display: flex; gap: 2px; }
+        .stg-item-grip span::before, .stg-item-grip span::after {
+            content: '';
+            width: 3px;
+            height: 3px;
+            border-radius: 50%;
+            background: #c4c9d4;
+            display: block;
+        }
+        .stg-home.customize-mode .stg-item-grip { display: flex; }
+
+        /* Card drag grip shown in customize mode */
+        .stg-card-grip {
+            display: none;
+            flex-wrap: wrap;
+            width: 10px;
+            gap: 2px;
+            margin-left: auto;
+            flex-shrink: 0;
+            align-content: flex-start;
+            padding-top: 1px;
+        }
+        .stg-card-grip span { display: block; width: 3px; height: 3px; border-radius: 50%; background: #9ca3af; }
+        .stg-home.customize-mode .stg-card-grip { display: flex; }
 
         .stg-detail-wrap {
             display: none;
@@ -1610,47 +1777,50 @@
         .ma-footer-social{display:flex;gap:10px}
         .ma-social-icon{width:26px;height:26px;border:1px solid #e4e6ea;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6b7280;cursor:pointer;text-decoration:none}
 
-        /* ── Rename Tags — Zoho Style ── */
-        #rename-tags-view{display:none;flex:1;flex-direction:column;overflow:hidden;background:#fff}
+        /* ── Rename Tags ── */
+        #rename-tags-view{display:none;flex:1;flex-direction:column;overflow:hidden;background:#f5f6f9}
         #rename-tags-view.active{display:flex}
-        .rt-page-hdr{border-bottom:1px solid #e8eaee;flex-shrink:0}
-        .rt-tabs{display:flex;gap:0;padding:0 24px}
-        .rt-tab{padding:12px 18px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;white-space:nowrap}
-        .rt-tab.active{color:#4f8ef7;border-bottom-color:#4f8ef7;font-weight:600}
-        .rt-tab:hover:not(.active){color:#374151}
-        .rt-body{flex:1;overflow-y:auto;background:#fff;padding:0 24px 32px}
-        .rt-body::-webkit-scrollbar{width:5px}
-        .rt-body::-webkit-scrollbar-thumb{background:#e4e6ea;border-radius:10px}
 
-        /* Accordion section */
-        .rt-acc{border:1px solid #e8eaee;border-radius:8px;margin-top:16px;overflow:hidden;background:#fff}
-        .rt-acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;transition:background .13s}
-        .rt-acc-hdr:hover{background:#fafbff}
-        .rt-acc-name{font-size:13.5px;color:#374151;font-weight:400}
-        .rt-acc-chevron{font-size:13px;color:#9ca3af;transition:transform .2s}
-        .rt-acc.open .rt-acc-chevron{transform:rotate(180deg)}
-        .rt-acc-body{display:none;border-top:1px solid #f0f2f5}
-        .rt-acc.open .rt-acc-body{display:block}
+        /* Tab bar */
+        .rt-page-hdr{background:#fff;border-bottom:1px solid #e8eaee;flex-shrink:0;padding:0 28px}
+        .rt-tabs{display:flex;gap:4px}
+        .rt-tab{padding:13px 16px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;white-space:nowrap;position:relative}
+        .rt-tab.active{color:#2563eb;border-bottom-color:#2563eb;font-weight:600}
+        .rt-tab:hover:not(.active){color:#374151;background:#f9fafb}
+
+        /* Body */
+        .rt-body{flex:1;overflow-y:auto;background:#f5f6f9;padding:24px 28px 40px}
+        .rt-body::-webkit-scrollbar{width:5px}
+        .rt-body::-webkit-scrollbar-thumb{background:#dde2eb;border-radius:10px}
+
+        /* Table card wrapper */
+        .rt-table-card{background:#fff;border-radius:12px;border:1px solid #e8eaee;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.04)}
 
         /* Tag table */
         .rt-tbl{width:100%;border-collapse:collapse}
         .rt-tbl thead tr{background:#f8f9fb}
-        .rt-tbl th{padding:10px 20px;font-size:12px;font-weight:700;color:#374151;text-align:left;border-bottom:1px solid #eef0f4}
+        .rt-tbl th{padding:11px 24px;font-size:11.5px;font-weight:700;color:#6b7280;text-align:left;border-bottom:1.5px solid #eef0f4;text-transform:uppercase;letter-spacing:.04em}
         .rt-tbl tbody tr{border-bottom:1px solid #f0f2f5;transition:background .12s}
         .rt-tbl tbody tr:last-child{border-bottom:none}
-        .rt-tbl tbody tr:hover{background:#fafbff}
-        .rt-tbl td{padding:13px 20px;font-size:13px;color:#374151;vertical-align:middle}
+        .rt-tbl tbody tr:hover{background:#f5f8ff}
+        .rt-tbl td{padding:14px 24px;font-size:13px;color:#374151;vertical-align:middle}
+
+        /* System tag chip */
+        .rt-tag-chip{display:inline-flex;align-items:center;padding:3px 10px;background:#f0f2f5;border-radius:20px;font-size:12.5px;font-weight:600;color:#374151;letter-spacing:-.01em}
 
         /* View / edit states */
-        .rt-cell-text{font-size:13px;color:#374151}
-        .rt-pencil-btn{background:none;border:none;color:#c5cad5;cursor:pointer;font-size:14px;padding:4px;border-radius:4px;transition:color .13s;display:inline-flex;align-items:center}
-        .rt-pencil-btn:hover{color:#4f8ef7}
-        .rt-input{width:100%;height:34px;border:1px solid #d1d5db;border-radius:6px;padding:0 10px;font-size:13px;color:#111827;background:#fff;outline:none;font-family:inherit;transition:border-color .15s}
+        .rt-val-text{font-size:13px;color:#374151}
+        .rt-edit-link{display:inline-flex;align-items:center;gap:4px;background:none;border:1px solid #e4e6ea;color:#6b7280;cursor:pointer;font-size:12px;font-weight:500;padding:4px 10px;border-radius:6px;transition:all .13s;white-space:nowrap}
+        .rt-edit-link:hover{border-color:#4f8ef7;color:#4f8ef7;background:#eff6ff}
+        .rt-input-wrap{display:flex;flex-direction:column;gap:3px}
+        .rt-input{width:100%;height:36px;border:1.5px solid #e4e6ea;border-radius:8px;padding:0 12px;font-size:13px;color:#111827;background:#fff;outline:none;font-family:inherit;transition:all .15s}
+        .rt-input:hover{border-color:#c8cdd8}
         .rt-input:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.1)}
-        .rt-save-btn{height:34px;padding:0 20px;border-radius:20px;border:none;background:#4f8ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .13s}
+        .rt-action-wrap{display:flex;align-items:center;gap:8px;white-space:nowrap}
+        .rt-save-btn{height:34px;padding:0 18px;border-radius:8px;border:none;background:#4f8ef7;color:#fff;font-size:12.5px;font-weight:600;cursor:pointer;transition:background .13s;box-shadow:0 1px 4px rgba(79,142,247,.3)}
         .rt-save-btn:hover{background:#3a7de6}
-        .rt-cancel-link{font-size:12px;color:#9ca3af;cursor:pointer;margin-left:8px;text-decoration:underline}
-        .rt-cancel-link:hover{color:#6b7280}
+        .rt-cancel-btn{height:34px;padding:0 14px;border-radius:8px;border:1.5px solid #e4e6ea;background:#fff;color:#6b7280;font-size:12.5px;font-weight:500;cursor:pointer;transition:all .13s}
+        .rt-cancel-btn:hover{border-color:#c8cdd8;color:#374151}
 
         #org-profile-form{display:none;flex:1;flex-direction:column;overflow:hidden;background:#f8f9fb;margin-top:0}
         #org-profile-form.active{display:flex}
@@ -1934,6 +2104,18 @@
             </div>
             
             <button class="stg-btn-save" id="stgSaveBtn">Save changes</button>
+            <button class="stg-customize-btn" id="stgCustomizeBtn">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                Customize
+            </button>
+        </div>
+
+        <!-- Customize banner -->
+        <div class="stg-customize-banner" id="stgCustomizeBanner">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            <span>Drag cards to reorder. Click <strong>Done</strong> to save your layout.</span>
+            <button onclick="stgExitCustomize()" style="margin-left:auto;height:28px;padding:0 14px;border-radius:6px;border:none;background:#4f8ef7;color:#fff;font-size:12px;font-weight:600;cursor:pointer">Done</button>
+            <button onclick="stgExitCustomize(true)" style="height:28px;padding:0 12px;border-radius:6px;border:1.5px solid #bfdbfe;background:#fff;color:#1d4ed8;font-size:12px;font-weight:500;cursor:pointer">Reset</button>
         </div>
 
         <!-- Recent Visits Bar -->
@@ -1948,21 +2130,21 @@
 
         <div class="stg-body">
             <div class="stg-home" id="stgHome">
-                <div class="stg-card"><div class="stg-card-hdr"><span class="stg-card-icon">&#127962;&#65039;</span><span class="stg-card-title">Onboarding</span><span class="stg-card-badge">2</span></div><div class="stg-card-items"><div class="stg-card-item" onclick="openOrgProfile(null)"><span class="stg-item-dot configured"></span><span>Organisation Profile</span></div><div class="stg-card-item" onclick="openManageAccounts()"><span class="stg-item-dot configured"></span><span>Manage Accounts</span></div></div></div>
-                <div class="stg-card"><div class="stg-card-hdr"><span class="stg-card-icon">⚙️</span><span class="stg-card-title">Account Setup</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item" onclick="openRenameTagsView()"><span class="stg-item-dot inactive"></span><span>Rename Tags</span></div><div class="stg-card-item" onclick="openUserDefaultPage()"><span class="stg-item-dot inactive"></span><span>User Default Page</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Custom Fields</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Display Preferences</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Notification Settings</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-users', 'acc-users')"><div class="stg-card-hdr"><span class="stg-card-icon">👥</span><span class="stg-card-title">Users & Teams</span><span class="stg-card-badge">6</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>User Management</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Role Hierarchy</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Permission Groups</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Teams</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Counsellor Config</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Field Force Tracking</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-security', 'acc-security')"><div class="stg-card-hdr"><span class="stg-card-icon">🔐</span><span class="stg-card-title">Security & Compliance</span><span class="stg-card-badge">7</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Login Methods</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>SSO/SAML</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>TOTP Authenticator</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>IP Allowlist</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>PII Masking</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Audit Trail</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Grant Access</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-comms', 'acc-comms')"><div class="stg-card-hdr"><span class="stg-card-icon">💬</span><span class="stg-card-title">Communication</span><span class="stg-card-badge">7</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>WhatsApp National</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>WhatsApp International</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Meta WABA</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>SMS/OTP</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Email Provider</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Telephony/IVR</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Template Library</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-leads', 'acc-leads')"><div class="stg-card-hdr"><span class="stg-card-icon">🎯</span><span class="stg-card-title">Leads & Enrollment</span><span class="stg-card-badge">6</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Lead Stages</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Lead Allocation</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Lead Score Rules</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Registration Config</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Slot Booking</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Application TAT</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-marketing', 'acc-marketing')"><div class="stg-card-hdr"><span class="stg-card-icon">📣</span><span class="stg-card-title">Marketing</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Campaign Config</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Landing Pages</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Google Ads</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Meta/Facebook</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Referral Connect</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-integrations', 'acc-integrations')"><div class="stg-card-hdr"><span class="stg-card-icon">🔌</span><span class="stg-card-title">Integrations</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Connectors</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Webhooks</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>ERP Push</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>API Tokens</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Loan Partners</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-finance', 'acc-finance')"><div class="stg-card-hdr"><span class="stg-card-icon">💳</span><span class="stg-card-title">Finance</span><span class="stg-card-badge">4</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Fee Types</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Payment Gateways</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Discount Coupons</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Wallet & Ledger</span></div></div></div>
-                <div class="stg-card" onclick="openSection('sec-data', 'acc-data')"><div class="stg-card-hdr"><span class="stg-card-icon">🗂️</span><span class="stg-card-title">Data Administration</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Master Data/Taxonomy</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Tag Library</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Custom Activities</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Dynamic Reports</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Archival Rules</span></div></div></div>
+                <div class="stg-card" style="--card-accent:#4f8ef7;--card-icon-bg:#eff6ff;--card-count-bg:#e8f0fe;--card-accent-text:#1d4ed8;--card-hover-bg:#f5f8ff"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">&#127962;&#65039;</div><span class="stg-card-title">Onboarding</span><span class="stg-card-count">2</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item" onclick="openOrgProfile(null)">Organisation Profile</div><div class="stg-card-item" onclick="openManageAccounts()">Manage Accounts</div></div></div>
+                <div class="stg-card" style="--card-accent:#7c6af6;--card-icon-bg:#f5f3ff;--card-count-bg:#ede9fe;--card-accent-text:#5b4fcf;--card-hover-bg:#f8f5ff"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">⚙️</div><span class="stg-card-title">Account Setup</span><span class="stg-card-count">5</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item" onclick="openRenameTagsView()">Rename Tags</div><div class="stg-card-item" onclick="openUserDefaultPage()">User Default Page</div><div class="stg-card-item">Custom Fields</div><div class="stg-card-item">Display Preferences</div><div class="stg-card-item">Notification Settings</div></div></div>
+                <div class="stg-card" style="--card-accent:#4f8ef7;--card-icon-bg:#eff6ff;--card-count-bg:#e8f0fe;--card-accent-text:#1d4ed8;--card-hover-bg:#f5f8ff" onclick="openSection('sec-users','acc-users')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">👥</div><span class="stg-card-title">Users & Teams</span><span class="stg-card-count">6</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">User Management</div><div class="stg-card-item">Role Hierarchy</div><div class="stg-card-item">Permission Groups</div><div class="stg-card-item">Teams</div><div class="stg-card-item">Counsellor Config</div><div class="stg-card-item">Field Force Tracking</div></div></div>
+                <div class="stg-card" style="--card-accent:#7c6af6;--card-icon-bg:#f5f3ff;--card-count-bg:#ede9fe;--card-accent-text:#5b4fcf;--card-hover-bg:#f8f5ff" onclick="openSection('sec-security','acc-security')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">🔐</div><span class="stg-card-title">Security & Compliance</span><span class="stg-card-count">7</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">Login Methods</div><div class="stg-card-item">SSO/SAML</div><div class="stg-card-item">TOTP Authenticator</div><div class="stg-card-item">IP Allowlist</div><div class="stg-card-item">PII Masking</div><div class="stg-card-item">Audit Trail</div><div class="stg-card-item">Grant Access</div></div></div>
+                <div class="stg-card" style="--card-accent:#4f8ef7;--card-icon-bg:#eff6ff;--card-count-bg:#e8f0fe;--card-accent-text:#1d4ed8;--card-hover-bg:#f5f8ff" onclick="openSection('sec-comms','acc-comms')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">💬</div><span class="stg-card-title">Communication</span><span class="stg-card-count">7</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">WhatsApp National</div><div class="stg-card-item">WhatsApp International</div><div class="stg-card-item">Meta WABA</div><div class="stg-card-item">SMS/OTP</div><div class="stg-card-item">Email Provider</div><div class="stg-card-item">Telephony/IVR</div><div class="stg-card-item">Template Library</div></div></div>
+                <div class="stg-card" style="--card-accent:#7c6af6;--card-icon-bg:#f5f3ff;--card-count-bg:#ede9fe;--card-accent-text:#5b4fcf;--card-hover-bg:#f8f5ff" onclick="openSection('sec-leads','acc-leads')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">🎯</div><span class="stg-card-title">Leads & Enrollment</span><span class="stg-card-count">6</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">Lead Stages</div><div class="stg-card-item">Lead Allocation</div><div class="stg-card-item">Lead Score Rules</div><div class="stg-card-item">Registration Config</div><div class="stg-card-item">Slot Booking</div><div class="stg-card-item">Application TAT</div></div></div>
+                <div class="stg-card" style="--card-accent:#4f8ef7;--card-icon-bg:#eff6ff;--card-count-bg:#e8f0fe;--card-accent-text:#1d4ed8;--card-hover-bg:#f5f8ff" onclick="openSection('sec-marketing','acc-marketing')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">📣</div><span class="stg-card-title">Marketing</span><span class="stg-card-count">5</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">Campaign Config</div><div class="stg-card-item">Landing Pages</div><div class="stg-card-item">Google Ads</div><div class="stg-card-item">Meta/Facebook</div><div class="stg-card-item">Referral Connect</div></div></div>
+                <div class="stg-card" style="--card-accent:#7c6af6;--card-icon-bg:#f5f3ff;--card-count-bg:#ede9fe;--card-accent-text:#5b4fcf;--card-hover-bg:#f8f5ff" onclick="openSection('sec-integrations','acc-integrations')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">🔌</div><span class="stg-card-title">Apps & Integrations</span><span class="stg-card-count">5</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">API Keys</div><div class="stg-card-item">Connectors</div><div class="stg-card-item">Webhooks</div><div class="stg-card-item">ERP Push</div><div class="stg-card-item">Loan Partners</div></div></div>
+                <div class="stg-card" style="--card-accent:#4f8ef7;--card-icon-bg:#eff6ff;--card-count-bg:#e8f0fe;--card-accent-text:#1d4ed8;--card-hover-bg:#f5f8ff" onclick="openSection('sec-finance','acc-finance')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">💳</div><span class="stg-card-title">Finance</span><span class="stg-card-count">4</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">Fee Types</div><div class="stg-card-item">Payment Gateways</div><div class="stg-card-item">Discount Coupons</div><div class="stg-card-item">Wallet & Ledger</div></div></div>
+                <div class="stg-card" style="--card-accent:#7c6af6;--card-icon-bg:#f5f3ff;--card-count-bg:#ede9fe;--card-accent-text:#5b4fcf;--card-hover-bg:#f8f5ff" onclick="openSection('sec-data','acc-data')"><div class="stg-card-hdr"><div class="stg-card-icon-wrap">🗂️</div><span class="stg-card-title">Data Administration</span><span class="stg-card-count">5</span><div class="stg-card-grip"><span></span><span></span><span></span><span></span><span></span><span></span></div></div><div class="stg-card-items"><div class="stg-card-item">Master Data/Taxonomy</div><div class="stg-card-item">Tag Library</div><div class="stg-card-item">Custom Activities</div><div class="stg-card-item">Dynamic Reports</div><div class="stg-card-item">Archival Rules</div></div></div>
             </div>
 
             <div class="stg-detail-wrap" id="stgDetailWrap">
-                <div class="stg-detail-nav"><div class="acc-category" id="acc-general"><button class="acc-header" onclick="toggleAccordion('acc-general', 'sec-account')">Onboarding<span class="acc-toggle">⌄</span></button><div class="acc-items" id="items-acc-general"><div class="acc-item active" onclick="openOrgProfile(this)"><span class="acc-dot"></span><span class="acc-lbl">Organisation Profile</span></div><div class="acc-item" onclick="openManageAccounts()"><span class="acc-dot"></span><span class="acc-lbl">Manage Accounts</span></div></div></div><div class="acc-category" id="acc-accsettings"><button class="acc-header" onclick="document.getElementById('acc-accsettings').classList.toggle('open');var it=document.getElementById('items-acc-accsettings');if(it)it.classList.toggle('open')">Account Settings<span class="acc-toggle">&#8964;</span></button><div class="acc-items" id="items-acc-accsettings"><div class="acc-item" onclick="openRenameTagsView()"><span class="acc-dot"></span><span class="acc-lbl">Rename Tags</span></div><div class="acc-item" onclick="openUserDefaultPage()"><span class="acc-dot"></span><span class="acc-lbl">User Default Page</span></div></div></div><div class="acc-category" id="acc-users"><button class="acc-header" onclick="toggleAccordion('acc-users', 'sec-users')">Users & Teams<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">User Management</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">Role Hierarchy</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Permission Groups</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Teams</span></div></div></div><div class="acc-category" id="acc-security"><button class="acc-header" onclick="toggleAccordion('acc-security', 'sec-security')">Security & Compliance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot configured"></span><span class="acc-lbl">Login Methods</span></div><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot pending"></span><span class="acc-lbl">SSO/SAML</span></div></div></div><div class="acc-category" id="acc-comms"><button class="acc-header" onclick="toggleAccordion('acc-comms', 'sec-comms')">Communication<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">WhatsApp National</span></div><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">Email Provider</span></div></div></div><div class="acc-category" id="acc-leads"><button class="acc-header" onclick="toggleAccordion('acc-leads', 'sec-leads')">Leads & Enrollment<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-leads')"><span class="acc-dot configured"></span><span class="acc-lbl">Lead Stages</span></div></div></div><div class="acc-category" id="acc-marketing"><button class="acc-header" onclick="toggleAccordion('acc-marketing', 'sec-marketing')">Marketing<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-marketing')"><span class="acc-dot configured"></span><span class="acc-lbl">Campaign Config</span></div></div></div><div class="acc-category" id="acc-integrations"><button class="acc-header" onclick="toggleAccordion('acc-integrations', 'sec-integrations')">Integrations<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-integrations')"><span class="acc-dot configured"></span><span class="acc-lbl">API Tokens</span></div></div></div><div class="acc-category" id="acc-finance"><button class="acc-header" onclick="toggleAccordion('acc-finance', 'sec-finance')">Finance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-finance')"><span class="acc-dot configured"></span><span class="acc-lbl">Payment Gateways</span></div></div></div><div class="acc-category" id="acc-data"><button class="acc-header" onclick="toggleAccordion('acc-data', 'sec-data')">Data Administration<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-data')"><span class="acc-dot configured"></span><span class="acc-lbl">Master Data</span></div></div></div></div>
-                <div class="stg-detail-content"><div class="stg-section" id="sec-users" style="display: none;"><div class="stg-section-title">Users & Teams</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">👤</span><div class="stg-row-text"><div class="stg-row-name">User Management</div><div class="stg-row-desc">Manage user accounts</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Manage</button></div></div></div><div class="stg-section" id="sec-security" style="display: none;"><div class="stg-section-title">Security & Compliance</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🔐</span><div class="stg-row-text"><div class="stg-row-name">Login Methods</div><div class="stg-row-desc">Configure auth options</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-comms" style="display: none;"><div class="stg-section-title">Communication</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">💬</span><div class="stg-row-text"><div class="stg-row-name">WhatsApp National</div><div class="stg-row-desc">WhatsApp config</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-leads" style="display: none;"><div class="stg-section-title">Lead Management</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🎯</span><div class="stg-row-text"><div class="stg-row-name">Lead Stages</div><div class="stg-row-desc">Define pipeline stages</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-marketing" style="display: none;"><div class="stg-section-title">Marketing</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">📣</span><div class="stg-row-text"><div class="stg-row-name">Campaign Config</div><div class="stg-row-desc">Campaign parameters</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-integrations" style="display: none;"><div class="stg-section-title">Integrations</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🔌</span><div class="stg-row-text"><div class="stg-row-name">API Tokens</div><div class="stg-row-desc">Manage API credentials</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Manage</button></div></div></div><div class="stg-section" id="sec-finance" style="display: none;"><div class="stg-section-title">Finance</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">💳</span><div class="stg-row-text"><div class="stg-row-name">Payment Gateways</div><div class="stg-row-desc">Payment processors</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-data" style="display: none;"><div class="stg-section-title">Data Administration</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🗂️</span><div class="stg-row-text"><div class="stg-row-name">Master Data</div><div class="stg-row-desc">Core data management</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div></div>
+                <div class="stg-detail-nav"><div class="acc-category" id="acc-general"><button class="acc-header" onclick="toggleAccordion('acc-general', 'sec-account')">Onboarding<span class="acc-toggle">⌄</span></button><div class="acc-items" id="items-acc-general"><div class="acc-item active" onclick="openOrgProfile(this)"><span class="acc-dot"></span><span class="acc-lbl">Organisation Profile</span></div><div class="acc-item" onclick="openManageAccounts()"><span class="acc-dot"></span><span class="acc-lbl">Manage Accounts</span></div></div></div><div class="acc-category" id="acc-accsettings"><button class="acc-header" onclick="document.getElementById('acc-accsettings').classList.toggle('open');var it=document.getElementById('items-acc-accsettings');if(it)it.classList.toggle('open')">Account Settings<span class="acc-toggle">&#8964;</span></button><div class="acc-items" id="items-acc-accsettings"><div class="acc-item" onclick="openRenameTagsView()"><span class="acc-dot"></span><span class="acc-lbl">Rename Tags</span></div><div class="acc-item" onclick="openUserDefaultPage()"><span class="acc-dot"></span><span class="acc-lbl">User Default Page</span></div></div></div><div class="acc-category" id="acc-users"><button class="acc-header" onclick="toggleAccordion('acc-users', 'sec-users')">Users & Teams<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">User Management</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">Role Hierarchy</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Permission Groups</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Teams</span></div></div></div><div class="acc-category" id="acc-security"><button class="acc-header" onclick="toggleAccordion('acc-security', 'sec-security')">Security & Compliance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot configured"></span><span class="acc-lbl">Login Methods</span></div><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot pending"></span><span class="acc-lbl">SSO/SAML</span></div></div></div><div class="acc-category" id="acc-comms"><button class="acc-header" onclick="toggleAccordion('acc-comms', 'sec-comms')">Communication<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">WhatsApp National</span></div><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">Email Provider</span></div></div></div><div class="acc-category" id="acc-leads"><button class="acc-header" onclick="toggleAccordion('acc-leads', 'sec-leads')">Leads & Enrollment<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-leads')"><span class="acc-dot configured"></span><span class="acc-lbl">Lead Stages</span></div></div></div><div class="acc-category" id="acc-marketing"><button class="acc-header" onclick="toggleAccordion('acc-marketing', 'sec-marketing')">Marketing<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-marketing')"><span class="acc-dot configured"></span><span class="acc-lbl">Campaign Config</span></div></div></div><div class="acc-category" id="acc-integrations"><button class="acc-header" onclick="toggleAccordion('acc-integrations', 'sec-integrations')">Apps & Integrations<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-integrations')"><span class="acc-dot configured"></span><span class="acc-lbl">API Keys</span></div></div></div><div class="acc-category" id="acc-finance"><button class="acc-header" onclick="toggleAccordion('acc-finance', 'sec-finance')">Finance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-finance')"><span class="acc-dot configured"></span><span class="acc-lbl">Payment Gateways</span></div></div></div><div class="acc-category" id="acc-data"><button class="acc-header" onclick="toggleAccordion('acc-data', 'sec-data')">Data Administration<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-data')"><span class="acc-dot configured"></span><span class="acc-lbl">Master Data</span></div></div></div></div>
+                <div class="stg-detail-content"><div class="stg-section" id="sec-users" style="display: none;"><div class="stg-section-title">Users & Teams</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">👤</span><div class="stg-row-text"><div class="stg-row-name">User Management</div><div class="stg-row-desc">Manage user accounts</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Manage</button></div></div></div><div class="stg-section" id="sec-security" style="display: none;"><div class="stg-section-title">Security & Compliance</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🔐</span><div class="stg-row-text"><div class="stg-row-name">Login Methods</div><div class="stg-row-desc">Configure auth options</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-comms" style="display: none;"><div class="stg-section-title">Communication</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">💬</span><div class="stg-row-text"><div class="stg-row-name">WhatsApp National</div><div class="stg-row-desc">WhatsApp config</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-leads" style="display: none;"><div class="stg-section-title">Lead Management</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🎯</span><div class="stg-row-text"><div class="stg-row-name">Lead Stages</div><div class="stg-row-desc">Define pipeline stages</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-marketing" style="display: none;"><div class="stg-section-title">Marketing</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">📣</span><div class="stg-row-text"><div class="stg-row-name">Campaign Config</div><div class="stg-row-desc">Campaign parameters</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-integrations" style="display: none;"><div class="stg-section-title">Apps & Integrations</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🔌</span><div class="stg-row-text"><div class="stg-row-name">API Keys</div><div class="stg-row-desc">Manage API credentials</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Manage</button></div></div></div><div class="stg-section" id="sec-finance" style="display: none;"><div class="stg-section-title">Finance</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">💳</span><div class="stg-row-text"><div class="stg-row-name">Payment Gateways</div><div class="stg-row-desc">Payment processors</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-data" style="display: none;"><div class="stg-section-title">Data Administration</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🗂️</span><div class="stg-row-text"><div class="stg-row-name">Master Data</div><div class="stg-row-desc">Core data management</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div></div>
                 <div id="org-profile-form">
                   <div class="org-form-body">
                     <div class="org-form-group"><div class="org-form-group-title">Basic Information</div>
@@ -2031,19 +2213,19 @@
                   </div>
 
                   <div id="rt-tab-opportunity" class="rt-body">
-                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-opportunity"></tbody></table>
+                    <div class="rt-table-card"><table class="rt-tbl"><thead><tr><th style="width:32%">System Tag</th><th>Singular Name</th><th>Plural Name</th><th style="width:80px"></th></tr></thead><tbody id="rtb-opportunity"></tbody></table></div>
                   </div>
                   <div id="rt-tab-payment" class="rt-body" style="display:none">
-                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-payment"></tbody></table>
+                    <div class="rt-table-card"><table class="rt-tbl"><thead><tr><th style="width:32%">System Tag</th><th>Singular Name</th><th>Plural Name</th><th style="width:80px"></th></tr></thead><tbody id="rtb-payment"></tbody></table></div>
                   </div>
                   <div id="rt-tab-application" class="rt-body" style="display:none">
-                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-application"></tbody></table>
+                    <div class="rt-table-card"><table class="rt-tbl"><thead><tr><th style="width:32%">System Tag</th><th>Singular Name</th><th>Plural Name</th><th style="width:80px"></th></tr></thead><tbody id="rtb-application"></tbody></table></div>
                   </div>
                   <div id="rt-tab-applicant" class="rt-body" style="display:none">
-                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-applicant"></tbody></table>
+                    <div class="rt-table-card"><table class="rt-tbl"><thead><tr><th style="width:32%">System Tag</th><th>Singular Name</th><th>Plural Name</th><th style="width:80px"></th></tr></thead><tbody id="rtb-applicant"></tbody></table></div>
                   </div>
                   <div id="rt-tab-institute" class="rt-body" style="display:none">
-                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-institute"></tbody></table>
+                    <div class="rt-table-card"><table class="rt-tbl"><thead><tr><th style="width:32%">System Tag</th><th>Singular Name</th><th>Plural Name</th><th style="width:80px"></th></tr></thead><tbody id="rtb-institute"></tbody></table></div>
                   </div>
                 </div>
 
@@ -2821,6 +3003,161 @@
                 var lbl = labelMap[sectionId] || sectionId;
                 trackVisit(lbl, function(){ openSection(sectionId, accordionId); });
             };
+        })();
+
+        // ── Settings Customize Mode ────────────────────────────────
+        (function() {
+            var btn    = document.getElementById('stgCustomizeBtn');
+            var banner = document.getElementById('stgCustomizeBanner');
+            var home   = document.getElementById('stgHome');
+            var active = false;
+            var cardDragSrc = null;
+            var itemDragSrc = null;
+            var originalHTML = '';
+
+            var GRIP_HTML = '<div class="stg-item-grip"><span></span><span></span><span></span></div>';
+
+            function getCards() { return Array.from(home.querySelectorAll('.stg-card')); }
+            function getItems(card) { return Array.from(card.querySelectorAll('.stg-card-item')); }
+
+            function enterCustomize() {
+                active = true;
+                originalHTML = home.innerHTML;
+                btn.classList.add('active');
+                banner.classList.add('show');
+                home.classList.add('customize-mode');
+                // Inject item grips
+                home.querySelectorAll('.stg-card-item').forEach(function(item) {
+                    var grip = document.createElement('div');
+                    grip.className = 'stg-item-grip';
+                    grip.innerHTML = '<span></span><span></span><span></span>';
+                    item.insertBefore(grip, item.firstChild);
+                });
+                bindCardDrag();
+                bindItemDrag();
+            }
+
+            window.stgExitCustomize = function(reset) {
+                active = false;
+                btn.classList.remove('active');
+                banner.classList.remove('show');
+                home.classList.remove('customize-mode');
+                if (reset && originalHTML) {
+                    home.innerHTML = originalHTML;
+                } else {
+                    // Remove injected grips
+                    home.querySelectorAll('.stg-item-grip').forEach(function(g){ g.remove(); });
+                }
+                unbindCardDrag();
+                unbindItemDrag();
+            };
+
+            // ── Card drag ──────────────────────────────────────────
+            function bindCardDrag() {
+                getCards().forEach(function(card) {
+                    card.setAttribute('draggable', 'true');
+                    card._cds = function(e) {
+                        // Prevent card drag if dragging an item
+                        if (e.target.closest('.stg-card-item')) return;
+                        cardDragSrc = card;
+                        card.classList.add('dragging');
+                        e.dataTransfer.effectAllowed = 'move';
+                        e.dataTransfer.setData('text/plain', '');
+                    };
+                    card._cde = function() {
+                        card.classList.remove('dragging');
+                        getCards().forEach(function(c){ c.classList.remove('drag-over'); });
+                    };
+                    card._cdo = function(e) {
+                        if (!cardDragSrc) return;
+                        e.preventDefault();
+                        getCards().forEach(function(c){ c.classList.remove('drag-over'); });
+                        card.classList.add('drag-over');
+                    };
+                    card._cdp = function(e) {
+                        e.preventDefault();
+                        if (!cardDragSrc || cardDragSrc === card) return;
+                        var cards = getCards();
+                        var si = cards.indexOf(cardDragSrc), ti = cards.indexOf(card);
+                        if (si < ti) home.insertBefore(cardDragSrc, card.nextSibling);
+                        else home.insertBefore(cardDragSrc, card);
+                        card.classList.remove('drag-over');
+                        cardDragSrc = null;
+                    };
+                    card.addEventListener('dragstart', card._cds);
+                    card.addEventListener('dragend',   card._cde);
+                    card.addEventListener('dragover',  card._cdo);
+                    card.addEventListener('drop',      card._cdp);
+                });
+            }
+
+            function unbindCardDrag() {
+                getCards().forEach(function(card) {
+                    card.setAttribute('draggable', 'false');
+                    ['_cds','_cde','_cdo','_cdp'].forEach(function(h){
+                        var ev = {_cds:'dragstart',_cde:'dragend',_cdo:'dragover',_cdp:'drop'}[h];
+                        if (card[h]) card.removeEventListener(ev, card[h]);
+                    });
+                });
+            }
+
+            // ── Item drag (within card) ───────────────────────────
+            function bindItemDrag() {
+                getCards().forEach(function(card) {
+                    getItems(card).forEach(function(item) {
+                        item.setAttribute('draggable', 'true');
+                        item._ids = function(e) {
+                            itemDragSrc = item;
+                            cardDragSrc = null; // prevent card from dragging
+                            item.classList.add('item-dragging');
+                            e.dataTransfer.effectAllowed = 'move';
+                            e.stopPropagation();
+                        };
+                        item._ide = function() {
+                            item.classList.remove('item-dragging');
+                            getItems(card).forEach(function(i){ i.classList.remove('item-drag-over'); });
+                        };
+                        item._ido = function(e) {
+                            if (!itemDragSrc) return;
+                            e.preventDefault();
+                            e.stopPropagation();
+                            getItems(card).forEach(function(i){ i.classList.remove('item-drag-over'); });
+                            if (item !== itemDragSrc) item.classList.add('item-drag-over');
+                        };
+                        item._idp = function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (!itemDragSrc || itemDragSrc === item) return;
+                            // Only allow within same card
+                            if (!card.contains(itemDragSrc)) return;
+                            var items = getItems(card);
+                            var si = items.indexOf(itemDragSrc), ti = items.indexOf(item);
+                            if (si < ti) card.querySelector('.stg-card-items').insertBefore(itemDragSrc, item.nextSibling);
+                            else card.querySelector('.stg-card-items').insertBefore(itemDragSrc, item);
+                            item.classList.remove('item-drag-over');
+                            itemDragSrc = null;
+                        };
+                        item.addEventListener('dragstart', item._ids);
+                        item.addEventListener('dragend',   item._ide);
+                        item.addEventListener('dragover',  item._ido);
+                        item.addEventListener('drop',      item._idp);
+                    });
+                });
+            }
+
+            function unbindItemDrag() {
+                home.querySelectorAll('.stg-card-item').forEach(function(item) {
+                    item.setAttribute('draggable', 'false');
+                    ['_ids','_ide','_ido','_idp'].forEach(function(h){
+                        var ev = {_ids:'dragstart',_ide:'dragend',_ido:'dragover',_idp:'drop'}[h];
+                        if (item[h]) item.removeEventListener(ev, item[h]);
+                    });
+                });
+            }
+
+            if (btn) btn.addEventListener('click', function() {
+                if (active) stgExitCustomize(); else enterCustomize();
+            });
         })();
     </script>
 </body>
