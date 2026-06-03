@@ -7,7 +7,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script>
         function hideAllPanels() {
-            ['org-profile-form','manage-accounts-view','rename-tags-view'].forEach(function(id) {
+            ['org-profile-form','manage-accounts-view','rename-tags-view','user-default-page-view'].forEach(function(id) {
                 var el = document.getElementById(id);
                 if (el) el.classList.remove('active');
             });
@@ -36,6 +36,13 @@
         }
         function openOrgProfile(el) { _showPanel('org-profile-form', 'Organisation Profile', 'acc-general'); }
         function openManageAccounts() { _showPanel('manage-accounts-view', 'Manage Accounts', 'acc-general'); }
+        function openUserDefaultPage() {
+            _showPanel('user-default-page-view', 'User Default Page', 'acc-accsettings');
+            var onbHead = document.getElementById('acc-general');
+            var onbItems = document.getElementById('items-acc-general');
+            if (onbHead) onbHead.classList.remove('open');
+            if (onbItems) onbItems.classList.remove('open');
+        }
         function openRenameTagsView() {
             _showPanel('rename-tags-view', 'Rename Tags', 'acc-accsettings');
             var onbHead = document.getElementById('acc-general');
@@ -62,6 +69,112 @@
             var ch = sec.querySelector('.rt-section-chevron');
             if (ch) ch.textContent = isOpen ? '\u2227' : '\u2228';
         }
+        function rtSwitchTab(el, tabId) {
+            el.closest('.rt-page-hdr').querySelectorAll('.rt-tab').forEach(function(t){ t.classList.remove('active'); });
+            el.classList.add('active');
+            ['rt-tab-opportunity','rt-tab-payment','rt-tab-application','rt-tab-applicant','rt-tab-institute'].forEach(function(id){
+                var p = document.getElementById(id);
+                if (p) p.style.display = id === tabId ? 'block' : 'none';
+            });
+        }
+        function rtToggleAcc(id) {
+            var acc = document.getElementById(id);
+            if (!acc) return;
+            acc.classList.toggle('open');
+            var ch = acc.querySelector('.rt-acc-chevron');
+            if (ch) ch.innerHTML = acc.classList.contains('open') ? '&#8743;' : '&#8744;';
+        }
+
+        // Tag data
+        var RT_DATA = {
+            'opportunity': [
+                { tag: 'Opportunity', singular: 'Opportunity', plural: 'Opportunities' }
+            ],
+            'applicant': [
+                { tag: 'Applicant', singular: 'Applicant', plural: 'Applicants' }
+            ],
+            'institute': [
+                { tag: 'Institute', singular: 'Institute', plural: 'Institutes' }
+            ],
+            'application': [
+                { tag: 'Application',        singular: 'Application',       plural: 'Applications' },
+                { tag: 'Application No',     singular: 'Application No',    plural: 'Applications No' },
+                { tag: 'Application Manager',singular: 'Application Manager',plural: 'Applications Manager' },
+                { tag: 'Unpaid Applications',singular: 'Unpaid Application', plural: 'Unpaid Applications' },
+                { tag: 'Paid Application',   singular: 'Paid Application',  plural: 'Paid Applications' },
+                { tag: 'Application Started',singular: 'Application Started',plural: 'Applications Started' },
+                { tag: 'Application Submitted',singular:'Application Submitted',plural:'Applications Submitted' }
+            ],
+            'payment': [
+                { tag: 'Payment',             singular: 'Payment',             plural: 'Payments' },
+                { tag: 'Payment Manager',     singular: 'Payment Manager',     plural: 'Payments Manager' },
+                { tag: 'Payment Initiated',   singular: 'Payment Initiated',   plural: 'Payment Initiated' },
+                { tag: 'Payment Not Initiated',singular:'Payment Not Initiated',plural:'Payment Not Initiated' },
+                { tag: 'Payment Approved',    singular: 'Payment Approved',    plural: 'Payment Approved' },
+                { tag: 'Online Payment',      singular: 'Online Payment',      plural: 'Online Payment' },
+                { tag: 'Offline Payment',     singular: 'Offline Payment',     plural: 'Offline Payment' },
+                { tag: 'Payment Mode',        singular: 'Payment Mode',        plural: 'Payment Mode' },
+                { tag: 'Payment Pending',     singular: 'Payment Pending',     plural: 'Payment Pending' },
+                { tag: 'Payment Gateway',     singular: 'Payment Gateway',     plural: 'Payment Gateway' },
+                { tag: 'Payment Rejected',    singular: 'Payment Rejected',    plural: 'Payment Rejected' }
+            ]
+        };
+
+        function rtRenderAll() {
+            Object.keys(RT_DATA).forEach(function(key) { rtRenderGroup(key); });
+        }
+
+        function rtRenderGroup(key) {
+            var tbody = document.getElementById('rtb-' + key);
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            RT_DATA[key].forEach(function(row, idx) {
+                var tr = document.createElement('tr');
+                tr.dataset.key = key;
+                tr.dataset.idx = idx;
+                tr.innerHTML = rtViewRow(key, idx, row);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function rtViewRow(key, idx, row) {
+            return '<td style="color:#374151;font-size:13px">' + row.tag + '</td>' +
+                   '<td style="color:#374151;font-size:13px">' + row.singular + '</td>' +
+                   '<td style="color:#374151;font-size:13px">' + row.plural + '</td>' +
+                   '<td style="text-align:right">' +
+                     '<button class="rt-pencil-btn" onclick="rtEditRow(\'' + key + '\',' + idx + ')" title="Edit">&#9998;</button>' +
+                   '</td>';
+        }
+
+        function rtEditRow(key, idx) {
+            var row = RT_DATA[key][idx];
+            var tbody = document.getElementById('rtb-' + key);
+            var tr = tbody.querySelectorAll('tr')[idx];
+            tr.innerHTML =
+                '<td style="color:#374151;font-size:13px;font-weight:500">' + row.tag + '</td>' +
+                '<td><input class="rt-input" id="rt-sin-' + key + idx + '" value="' + row.singular + '"></td>' +
+                '<td><input class="rt-input" id="rt-plu-' + key + idx + '" value="' + row.plural + '"></td>' +
+                '<td style="white-space:nowrap;text-align:right">' +
+                  '<button class="rt-save-btn" onclick="rtSaveRow(\'' + key + '\',' + idx + ')">Save</button>' +
+                  '<span class="rt-cancel-link" onclick="rtRenderGroup(\'' + key + '\')">Cancel</span>' +
+                '</td>';
+            document.getElementById('rt-sin-' + key + idx).focus();
+        }
+
+        function rtSaveRow(key, idx) {
+            var sin = document.getElementById('rt-sin-' + key + idx);
+            var plu = document.getElementById('rt-plu-' + key + idx);
+            if (sin) RT_DATA[key][idx].singular = sin.value;
+            if (plu) RT_DATA[key][idx].plural   = plu.value;
+            rtRenderGroup(key);
+        }
+
+        // Init on panel open
+        var _origOpenRename = window.openRenameTagsView;
+        window.openRenameTagsView = function() {
+            _origOpenRename();
+            setTimeout(rtRenderAll, 0);
+        };
     </script>
     <style>
         * {
@@ -887,6 +1000,7 @@
             gap: 12px;
             flex-shrink: 0;
             box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            overflow: visible;
         }
 
         .stg-back-btn {
@@ -950,12 +1064,16 @@
             white-space: nowrap;
         }
 
-        .stg-search {
+        .stg-search-wrap {
             flex: 1;
+            max-width: 380px;
+            position: relative;
+        }
+
+        .stg-search {
             display: flex;
             align-items: center;
             gap: 8px;
-            max-width: 380px;
             padding: 7px 14px;
             background: #f5f6f8;
             border-radius: 8px;
@@ -976,6 +1094,7 @@
             font-size: 13px;
             outline: none;
             color: #111827;
+            width: 100%;
         }
 
         .stg-search input::placeholder { color: #b0b8c8; }
@@ -988,6 +1107,106 @@
             border-radius: 4px;
             padding: 1px 5px;
             font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .stg-search-dropdown {
+            display: none;
+            position: fixed;
+            background: #fff;
+            border: 1.5px solid #e8eaee;
+            border-radius: 10px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            z-index: 9999;
+            overflow: hidden;
+        }
+
+        .stg-search-dropdown.visible {
+            display: block;
+        }
+
+        .stg-search-dd-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px 6px;
+        }
+
+        .stg-search-dd-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #9ca3af;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .stg-search-dd-clear {
+            font-size: 11px;
+            color: #4f8ef7;
+            cursor: pointer;
+            font-weight: 600;
+            background: none;
+            border: none;
+            padding: 0;
+        }
+
+        .stg-search-dd-clear:hover { text-decoration: underline; }
+
+        .stg-search-dd-empty {
+            padding: 16px 14px;
+            font-size: 12.5px;
+            color: #b0b8c8;
+            text-align: center;
+        }
+
+        .stg-search-dd-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 14px;
+            cursor: pointer;
+            transition: background .12s;
+        }
+
+        .stg-search-dd-item:hover { background: #f5f8ff; }
+
+        .stg-search-dd-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: #f0f2f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            flex-shrink: 0;
+        }
+
+        .stg-search-dd-text {
+            flex: 1;
+            font-size: 13px;
+            color: #111827;
+            font-weight: 500;
+        }
+
+        .stg-search-dd-remove {
+            font-size: 14px;
+            color: #d1d5db;
+            cursor: pointer;
+            padding: 2px 4px;
+            border-radius: 4px;
+            background: none;
+            border: none;
+            line-height: 1;
+            transition: color .12s;
+        }
+
+        .stg-search-dd-remove:hover { color: #6b7280; }
+
+        .stg-search-dd-divider {
+            height: 1px;
+            background: #f3f4f6;
+            margin: 4px 0;
         }
 
         .stg-btn-save {
@@ -1030,96 +1249,79 @@
             flex: 1;
             overflow-y: auto;
             padding: 0;
+            background: #f0f2f7;
         }
 
         .stg-home {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 16px;
-            padding: 20px;
+            padding: 24px;
+            background: #f0f2f7;
+            min-height: 100%;
         }
 
         .stg-card {
-            background: white;
-            border: 1px solid #e8eaee;
-            border-radius: 8px;
+            background: #fff;
+            border: none;
+            border-radius: 12px;
             overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,.06), 0 0 0 1px rgba(0,0,0,.04);
+            transition: box-shadow .15s;
+        }
+
+        .stg-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,.10), 0 0 0 1px rgba(0,0,0,.04);
         }
 
         .stg-card-hdr {
-            padding: 12px 16px;
-            border-bottom: 1px solid #e8eaee;
+            padding: 16px 20px 10px;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 10px;
         }
 
         .stg-card-icon {
-            font-size: 18px;
+            font-size: 20px;
+            flex-shrink: 0;
         }
 
         .stg-card-title {
             flex: 1;
-            font-size: 13px;
+            font-size: 14px;
             font-weight: 700;
-            color: #1a2236;
+            color: #111827;
+            letter-spacing: -.01em;
         }
 
-        .stg-card-badge {
-            background: #f0f2f5;
-            padding: 2px 8px;
-            border-radius: 4px;
-            font-size: 11px;
-            font-weight: 600;
-            color: #666;
-        }
+        .stg-card-badge { display: none; }
 
         .stg-card-items {
-            padding: 8px 0;
-            font-size: 12px;
+            padding: 4px 0 14px;
         }
 
         .stg-card-item {
-            padding: 8px 16px;
-            color: #666;
+            padding: 7px 20px;
+            color: #4b5563;
+            font-size: 13px;
             display: flex;
             align-items: center;
-            gap: 8px;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: color .13s, background .13s;
+            border-radius: 0;
         }
 
         .stg-card-item:hover {
-            background: #f9fafb;
+            color: #2563eb;
+            background: #f5f8ff;
         }
 
-        .stg-item-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            flex-shrink: 0;
-        }
+        .stg-item-dot { display: none; }
+        .stg-item-dot.configured { display: none; }
+        .stg-item-dot.pending    { display: none; }
+        .stg-item-dot.inactive   { display: none; }
 
-        .stg-item-dot.configured {
-            background: #22c55e;
-        }
-
-        .stg-item-dot.pending {
-            background: #f59e0b;
-        }
-
-        .stg-item-dot.inactive {
-            background: #d1d5db;
-        }
-
-        .stg-card-footer {
-            padding: 10px 16px;
-            border-top: 1px solid #e8eaee;
-            font-size: 11px;
-            color: #999;
-            display: flex;
-            justify-content: space-between;
-        }
+        .stg-card-footer { display: none; }
 
         .stg-detail-wrap {
             display: none;
@@ -1408,39 +1610,47 @@
         .ma-footer-social{display:flex;gap:10px}
         .ma-social-icon{width:26px;height:26px;border:1px solid #e4e6ea;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;color:#6b7280;cursor:pointer;text-decoration:none}
 
-        #rename-tags-view{display:none;flex:1;flex-direction:column;overflow:hidden;background:#f5f6f9}
+        /* ── Rename Tags — Zoho Style ── */
+        #rename-tags-view{display:none;flex:1;flex-direction:column;overflow:hidden;background:#fff}
         #rename-tags-view.active{display:flex}
-        .rt-header{background:#fff;border-bottom:1px solid #e8eaee;padding:0 32px;height:auto;flex-shrink:0}
-        .rt-header-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;padding-top:14px}
-        .rt-title{font-size:18px;font-weight:800;color:#111827;margin-bottom:4px;letter-spacing:-.3px}
-        .rt-subtitle{font-size:12.5px;color:#9ca3af;margin-bottom:14px;line-height:1.5}
-        .rt-tab-line{width:44px;height:2.5px;background:#4f8ef7;border-radius:2px}
-        .rt-collapse-btn{width:30px;height:30px;border:1.5px solid #e4e6ea;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;font-size:13px;flex-shrink:0;transition:all .15s}
-        .rt-collapse-btn:hover{background:#f5f6f8}
-        .rt-body{flex:1;overflow-y:auto;padding:24px 32px}
+        .rt-page-hdr{border-bottom:1px solid #e8eaee;flex-shrink:0}
+        .rt-tabs{display:flex;gap:0;padding:0 24px}
+        .rt-tab{padding:12px 18px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;border-bottom:2.5px solid transparent;transition:all .15s;white-space:nowrap}
+        .rt-tab.active{color:#4f8ef7;border-bottom-color:#4f8ef7;font-weight:600}
+        .rt-tab:hover:not(.active){color:#374151}
+        .rt-body{flex:1;overflow-y:auto;background:#fff;padding:0 24px 32px}
         .rt-body::-webkit-scrollbar{width:5px}
-        .rt-body::-webkit-scrollbar-thumb{background:#dde2eb;border-radius:10px}
-        .rt-section{background:#fff;border:1px solid #e8eaee;border-radius:12px;margin-bottom:10px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.04);transition:box-shadow .15s}
-        .rt-section:hover{box-shadow:0 2px 8px rgba(0,0,0,0.07)}
-        .rt-section-head{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;cursor:pointer;user-select:none;transition:background .13s}
-        .rt-section-head:hover{background:#fafbff}
-        .rt-section-name{font-size:14px;font-weight:600;color:#111827;letter-spacing:-.01em}
-        .rt-section-chevron{color:#c8cdd8;font-size:14px;transition:transform .22s;flex-shrink:0}
-        .rt-section.open .rt-section-chevron{transform:rotate(180deg);color:#4f8ef7}
-        .rt-section-body{display:none;border-top:1px solid #f3f4f6;background:#fafbfc}
-        .rt-section.open .rt-section-body{display:block}
-        .rt-table{width:100%;border-collapse:collapse}
-        .rt-table thead tr{background:#f5f6f8}
-        .rt-table th{padding:12px 22px;font-size:11.5px;font-weight:700;color:#6b7280;text-align:left;border-bottom:1px solid #eef0f4;text-transform:uppercase;letter-spacing:.05em}
-        .rt-table tbody tr{border-bottom:1px solid #f3f4f6;transition:background .12s}
-        .rt-table tbody tr:last-child{border-bottom:none}
-        .rt-table tbody tr:hover{background:#f8f9ff}
-        .rt-table td{padding:16px 22px;font-size:13.5px;color:#374151;vertical-align:middle}
-        .rt-input{width:100%;height:38px;border:1.5px solid #e4e6ea;border-radius:8px;padding:0 12px;font-size:13px;color:#111827;background:#fff;outline:none;font-family:inherit;transition:all .15s}
-        .rt-input:hover{border-color:#c8cdd8}
+        .rt-body::-webkit-scrollbar-thumb{background:#e4e6ea;border-radius:10px}
+
+        /* Accordion section */
+        .rt-acc{border:1px solid #e8eaee;border-radius:8px;margin-top:16px;overflow:hidden;background:#fff}
+        .rt-acc-hdr{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;cursor:pointer;user-select:none;transition:background .13s}
+        .rt-acc-hdr:hover{background:#fafbff}
+        .rt-acc-name{font-size:13.5px;color:#374151;font-weight:400}
+        .rt-acc-chevron{font-size:13px;color:#9ca3af;transition:transform .2s}
+        .rt-acc.open .rt-acc-chevron{transform:rotate(180deg)}
+        .rt-acc-body{display:none;border-top:1px solid #f0f2f5}
+        .rt-acc.open .rt-acc-body{display:block}
+
+        /* Tag table */
+        .rt-tbl{width:100%;border-collapse:collapse}
+        .rt-tbl thead tr{background:#f8f9fb}
+        .rt-tbl th{padding:10px 20px;font-size:12px;font-weight:700;color:#374151;text-align:left;border-bottom:1px solid #eef0f4}
+        .rt-tbl tbody tr{border-bottom:1px solid #f0f2f5;transition:background .12s}
+        .rt-tbl tbody tr:last-child{border-bottom:none}
+        .rt-tbl tbody tr:hover{background:#fafbff}
+        .rt-tbl td{padding:13px 20px;font-size:13px;color:#374151;vertical-align:middle}
+
+        /* View / edit states */
+        .rt-cell-text{font-size:13px;color:#374151}
+        .rt-pencil-btn{background:none;border:none;color:#c5cad5;cursor:pointer;font-size:14px;padding:4px;border-radius:4px;transition:color .13s;display:inline-flex;align-items:center}
+        .rt-pencil-btn:hover{color:#4f8ef7}
+        .rt-input{width:100%;height:34px;border:1px solid #d1d5db;border-radius:6px;padding:0 10px;font-size:13px;color:#111827;background:#fff;outline:none;font-family:inherit;transition:border-color .15s}
         .rt-input:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.1)}
-        .rt-save-btn{height:36px;padding:0 22px;border-radius:18px;border:none;background:#4f8ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .13s;box-shadow:0 2px 8px rgba(79,142,247,.25)}
+        .rt-save-btn{height:34px;padding:0 20px;border-radius:20px;border:none;background:#4f8ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background .13s}
         .rt-save-btn:hover{background:#3a7de6}
+        .rt-cancel-link{font-size:12px;color:#9ca3af;cursor:pointer;margin-left:8px;text-decoration:underline}
+        .rt-cancel-link:hover{color:#6b7280}
 
         #org-profile-form{display:none;flex:1;flex-direction:column;overflow:hidden;background:#f8f9fb;margin-top:0}
         #org-profile-form.active{display:flex}
@@ -1473,11 +1683,146 @@
 
         .stg-detail-wrap #org-profile-form,
         .stg-detail-wrap #manage-accounts-view,
-        .stg-detail-wrap #rename-tags-view { flex:1; min-width:0; }
+        .stg-detail-wrap #rename-tags-view,
+        .stg-detail-wrap #user-default-page-view { flex:1; min-width:0; }
 
         /* Nav item dots */
         .acc-dot { width:7px;height:7px;border-radius:50%;background:#e5e7eb;flex-shrink:0; }
         .acc-item.active .acc-dot { background:#4f8ef7; }
+
+        /* ── User Default Page View ── */
+        #user-default-page-view{display:none;flex:1;flex-direction:column;overflow:hidden;background:#f5f6f9}
+        #user-default-page-view.active{display:flex}
+        .udp-header{background:#fff;border-bottom:1px solid #e8eaee;padding:14px 32px 0;flex-shrink:0}
+        .udp-header-row{display:flex;align-items:flex-start;justify-content:space-between}
+        .udp-title{font-size:18px;font-weight:800;color:#111827;letter-spacing:-.3px;margin-bottom:3px}
+        .udp-subtitle{font-size:12.5px;color:#9ca3af;margin-bottom:12px}
+        .udp-tab-line{width:44px;height:2.5px;background:#4f8ef7;border-radius:2px}
+        .udp-collapse-btn{width:30px;height:30px;border:1.5px solid #e4e6ea;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;font-size:13px;flex-shrink:0;transition:all .15s;margin-top:2px}
+        .udp-collapse-btn:hover{background:#f5f6f8}
+        .udp-body{flex:1;overflow-y:auto;padding:28px 36px 40px}
+        .udp-body::-webkit-scrollbar{width:5px}
+        .udp-body::-webkit-scrollbar-thumb{background:#dde2eb;border-radius:10px}
+
+        /* Zone card */
+        .udp-zone-card{background:#fff;border:1px solid #e8eaee;border-radius:12px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,.04);margin-bottom:12px}
+        .udp-zone-hdr{padding:14px 20px 10px;border-bottom:1px solid #f0f2f5}
+        .udp-zone-title{font-size:13px;font-weight:700;color:#111827;margin-bottom:2px}
+        .udp-zone-sub{font-size:11.5px;color:#9ca3af}
+
+        /* Connector */
+        .udp-connector{display:flex;align-items:center;gap:8px;padding:6px 20px;font-size:11.5px;color:#9ca3af;font-style:italic}
+        .udp-connector::before{content:'';flex:1;height:1px;background:repeating-linear-gradient(90deg,#e4e6ea 0,#e4e6ea 4px,transparent 4px,transparent 8px)}
+        .udp-connector::after{content:'';flex:1;height:1px;background:repeating-linear-gradient(90deg,#e4e6ea 0,#e4e6ea 4px,transparent 4px,transparent 8px)}
+
+        /* System priority list */
+        .udp-sys-row{display:grid;grid-template-columns:32px 28px 1fr 36px;align-items:center;gap:8px;padding:9px 16px;border-bottom:1px solid #f3f4f6;transition:background .12s}
+        .udp-sys-row:last-child{border-bottom:none}
+        .udp-sys-row:hover{background:#fafbff}
+        .udp-sys-row.dragging{opacity:.35;background:#eff6ff}
+        .udp-sys-row.drag-over{border-top:2px solid #4f8ef7;background:#f0f7ff}
+        .udp-drag-handle{display:grid;grid-template-columns:1fr 1fr;gap:3px;width:14px;cursor:grab}
+        .udp-drag-handle:active{cursor:grabbing}
+        .udp-drag-dot{width:4px;height:4px;border-radius:50%;background:#c7d2fe}
+        .udp-sys-num{width:22px;height:22px;border-radius:50%;background:#eff6ff;color:#4f8ef7;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center}
+        .udp-sys-name{font-size:13px;color:#374151;font-weight:500}
+
+        /* Override table */
+        .udp-ov-head{display:grid;grid-template-columns:1fr 1fr 36px;gap:8px;padding:9px 16px;background:#f8f9fb;border-bottom:1.5px solid #eef0f4}
+        .udp-ov-th{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.05em}
+        .udp-ov-row{display:grid;grid-template-columns:1fr 1fr 36px;gap:8px;align-items:start;padding:10px 16px;border-bottom:1px solid #f3f4f6;transition:background .12s}
+        .udp-ov-row:last-child{border-bottom:none}
+        .udp-ov-row:hover{background:#fafbff}
+        .udp-ov-select-wrap{position:relative}
+        .udp-ov-select{width:100%;height:34px;border:1.5px solid #e4e6ea;border-radius:7px;padding:0 28px 0 10px;font-size:12.5px;color:#111827;background:#fff;outline:none;appearance:none;cursor:pointer;font-family:inherit;transition:border-color .15s}
+        .udp-ov-select:focus{border-color:#4f8ef7;box-shadow:0 0 0 3px rgba(79,142,247,.1)}
+        .udp-ov-select-wrap::after{content:'';position:absolute;right:9px;top:50%;transform:translateY(-50%);width:0;height:0;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #9ca3af;pointer-events:none}
+        .udp-ov-select.warn{border-color:#f59e0b;background:#fffbeb}
+        .udp-effective{font-size:12px;color:#374151;display:flex;align-items:center;gap:5px}
+        .udp-effective.no-access{color:#d97706}
+
+        /* Status pills */
+        .udp-status{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap}
+        .udp-status.custom{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe}
+        .udp-status.system{background:#f3f4f6;color:#6b7280;border:1px solid #e5e7eb}
+        .udp-status.no-access{background:#fffbeb;color:#d97706;border:1px solid #fde68a}
+        .udp-status-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+
+        /* Delete btn */
+        .udp-del-btn{width:30px;height:30px;border-radius:50%;border:1.5px solid #fca5a5;background:#fff;color:#ef4444;font-size:15px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s;flex-shrink:0;margin-top:2px}
+        .udp-del-btn:hover{background:#ef4444;color:#fff;border-color:#ef4444}
+
+        /* Add override */
+        .udp-add-ov-wrap{padding:10px 16px;border-top:1px dashed #e4e6ea}
+        .udp-add-ov-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:none;color:#4f8ef7;font-size:13px;font-weight:600;cursor:pointer;padding:0;transition:opacity .13s}
+        .udp-add-ov-btn:hover{opacity:.75}
+
+        /* Footer */
+        .udp-footer{display:flex;align-items:center;justify-content:flex-end;gap:12px;margin-top:16px}
+        .udp-footer-note{font-size:12px;color:#22c55e;font-weight:500}
+        .udp-save-btn{height:36px;padding:0 28px;border-radius:20px;border:none;background:#4f8ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer;transition:background .13s;box-shadow:0 2px 8px rgba(79,142,247,.25)}
+        .udp-save-btn:hover{background:#3a7de6}
+
+        /* ── Recent Visits Bar ── */
+        .stg-recent-bar {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 0 24px;
+            height: 38px;
+            background: #fff;
+            border-bottom: 1px solid #f0f2f5;
+            flex-shrink: 0;
+            overflow: hidden;
+        }
+        .stg-recent-bar.visible { display: flex; }
+        .stg-recent-bar-icon {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #9ca3af;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .stg-recent-bar-icon svg { flex-shrink: 0; }
+        .stg-recent-sep {
+            width: 1px;
+            height: 16px;
+            background: #e4e6ea;
+            flex-shrink: 0;
+        }
+        .stg-recent-pills {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            overflow: hidden;
+        }
+        .stg-recent-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            color: #374151;
+            background: #f3f4f6;
+            border: 1px solid transparent;
+            transition: background .13s, color .13s, border-color .13s;
+        }
+        .stg-recent-pill:hover {
+            background: #e8f0fe;
+            color: #1d4ed8;
+        }
+        .stg-recent-pill.active-pill {
+            background: #eff6ff;
+            color: #2563eb;
+            border-color: #bfdbfe;
+            font-weight: 600;
+        }
 </style>
 </head>
 <body>
@@ -1574,15 +1919,37 @@
         <div class="stg-hdr">
             <button class="stg-back-btn" id="stgBackBtn">Back</button>
             <div class="stg-title">Settings</div>
-            <div class="stg-search"><input type="text" placeholder="Search Settings"><span class="stg-search-hint">⌘K</span></div>
+            <div class="stg-search-wrap" id="stgSearchWrap">
+                <div class="stg-search">
+                    <input type="text" id="stgSearchInput" placeholder="Search Settings" autocomplete="off">
+                    <span class="stg-search-hint">⌘K</span>
+                </div>
+                <div class="stg-search-dropdown" id="stgSearchDropdown">
+                    <div class="stg-search-dd-header">
+                        <span class="stg-search-dd-label">Recent Searches</span>
+                        <button class="stg-search-dd-clear" id="stgClearRecent">Clear all</button>
+                    </div>
+                    <div id="stgRecentList"></div>
+                </div>
+            </div>
             
             <button class="stg-btn-save" id="stgSaveBtn">Save changes</button>
-            <button class="stg-close-btn" id="stgCloseBtn">✕</button>
         </div>
+
+        <!-- Recent Visits Bar -->
+        <div class="stg-recent-bar" id="stgRecentBar">
+            <div class="stg-recent-bar-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                Recent
+            </div>
+            <div class="stg-recent-sep"></div>
+            <div class="stg-recent-pills" id="stgRecentPills"></div>
+        </div>
+
         <div class="stg-body">
             <div class="stg-home" id="stgHome">
                 <div class="stg-card"><div class="stg-card-hdr"><span class="stg-card-icon">&#127962;&#65039;</span><span class="stg-card-title">Onboarding</span><span class="stg-card-badge">2</span></div><div class="stg-card-items"><div class="stg-card-item" onclick="openOrgProfile(null)"><span class="stg-item-dot configured"></span><span>Organisation Profile</span></div><div class="stg-card-item" onclick="openManageAccounts()"><span class="stg-item-dot configured"></span><span>Manage Accounts</span></div></div></div>
-                <div class="stg-card"><div class="stg-card-hdr"><span class="stg-card-icon">⚙️</span><span class="stg-card-title">Account Setup</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item" onclick="openRenameTagsView()"><span class="stg-item-dot inactive"></span><span>Rename Tags</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>User Default Page</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Custom Fields</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Display Preferences</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Notification Settings</span></div></div></div>
+                <div class="stg-card"><div class="stg-card-hdr"><span class="stg-card-icon">⚙️</span><span class="stg-card-title">Account Setup</span><span class="stg-card-badge">5</span></div><div class="stg-card-items"><div class="stg-card-item" onclick="openRenameTagsView()"><span class="stg-item-dot inactive"></span><span>Rename Tags</span></div><div class="stg-card-item" onclick="openUserDefaultPage()"><span class="stg-item-dot inactive"></span><span>User Default Page</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Custom Fields</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Display Preferences</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Notification Settings</span></div></div></div>
                 <div class="stg-card" onclick="openSection('sec-users', 'acc-users')"><div class="stg-card-hdr"><span class="stg-card-icon">👥</span><span class="stg-card-title">Users & Teams</span><span class="stg-card-badge">6</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>User Management</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Role Hierarchy</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Permission Groups</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Teams</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Counsellor Config</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>Field Force Tracking</span></div></div></div>
                 <div class="stg-card" onclick="openSection('sec-security', 'acc-security')"><div class="stg-card-hdr"><span class="stg-card-icon">🔐</span><span class="stg-card-title">Security & Compliance</span><span class="stg-card-badge">7</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Login Methods</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>SSO/SAML</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>TOTP Authenticator</span></div><div class="stg-card-item"><span class="stg-item-dot inactive"></span><span>IP Allowlist</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>PII Masking</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Audit Trail</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Grant Access</span></div></div></div>
                 <div class="stg-card" onclick="openSection('sec-comms', 'acc-comms')"><div class="stg-card-hdr"><span class="stg-card-icon">💬</span><span class="stg-card-title">Communication</span><span class="stg-card-badge">7</span></div><div class="stg-card-items"><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>WhatsApp National</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>WhatsApp International</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Meta WABA</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>SMS/OTP</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Email Provider</span></div><div class="stg-card-item"><span class="stg-item-dot pending"></span><span>Telephony/IVR</span></div><div class="stg-card-item"><span class="stg-item-dot configured"></span><span>Template Library</span></div></div></div>
@@ -1594,13 +1961,9 @@
             </div>
 
             <div class="stg-detail-wrap" id="stgDetailWrap">
-                <div class="stg-detail-nav"><div class="acc-category" id="acc-general"><button class="acc-header" onclick="toggleAccordion('acc-general', 'sec-account')">Onboarding<span class="acc-toggle">⌄</span></button><div class="acc-items" id="items-acc-general"><div class="acc-item active" onclick="openOrgProfile(this)"><span class="acc-dot"></span><span class="acc-lbl">Organisation Profile</span></div><div class="acc-item" onclick="openManageAccounts()"><span class="acc-dot"></span><span class="acc-lbl">Manage Accounts</span></div></div></div><div class="acc-category" id="acc-accsettings"><button class="acc-header" onclick="document.getElementById('acc-accsettings').classList.toggle('open');var it=document.getElementById('items-acc-accsettings');if(it)it.classList.toggle('open')">Account Settings<span class="acc-toggle">&#8964;</span></button><div class="acc-items" id="items-acc-accsettings"><div class="acc-item" onclick="openRenameTagsView()"><span class="acc-dot"></span><span class="acc-lbl">Rename Tags</span></div><div class="acc-item"><span class="acc-dot"></span><span class="acc-lbl">User Default Page</span></div></div></div><div class="acc-category" id="acc-users"><button class="acc-header" onclick="toggleAccordion('acc-users', 'sec-users')">Users & Teams<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">User Management</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">Role Hierarchy</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Permission Groups</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Teams</span></div></div></div><div class="acc-category" id="acc-security"><button class="acc-header" onclick="toggleAccordion('acc-security', 'sec-security')">Security & Compliance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot configured"></span><span class="acc-lbl">Login Methods</span></div><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot pending"></span><span class="acc-lbl">SSO/SAML</span></div></div></div><div class="acc-category" id="acc-comms"><button class="acc-header" onclick="toggleAccordion('acc-comms', 'sec-comms')">Communication<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">WhatsApp National</span></div><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">Email Provider</span></div></div></div><div class="acc-category" id="acc-leads"><button class="acc-header" onclick="toggleAccordion('acc-leads', 'sec-leads')">Leads & Enrollment<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-leads')"><span class="acc-dot configured"></span><span class="acc-lbl">Lead Stages</span></div></div></div><div class="acc-category" id="acc-marketing"><button class="acc-header" onclick="toggleAccordion('acc-marketing', 'sec-marketing')">Marketing<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-marketing')"><span class="acc-dot configured"></span><span class="acc-lbl">Campaign Config</span></div></div></div><div class="acc-category" id="acc-integrations"><button class="acc-header" onclick="toggleAccordion('acc-integrations', 'sec-integrations')">Integrations<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-integrations')"><span class="acc-dot configured"></span><span class="acc-lbl">API Tokens</span></div></div></div><div class="acc-category" id="acc-finance"><button class="acc-header" onclick="toggleAccordion('acc-finance', 'sec-finance')">Finance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-finance')"><span class="acc-dot configured"></span><span class="acc-lbl">Payment Gateways</span></div></div></div><div class="acc-category" id="acc-data"><button class="acc-header" onclick="toggleAccordion('acc-data', 'sec-data')">Data Administration<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-data')"><span class="acc-dot configured"></span><span class="acc-lbl">Master Data</span></div></div></div></div>
+                <div class="stg-detail-nav"><div class="acc-category" id="acc-general"><button class="acc-header" onclick="toggleAccordion('acc-general', 'sec-account')">Onboarding<span class="acc-toggle">⌄</span></button><div class="acc-items" id="items-acc-general"><div class="acc-item active" onclick="openOrgProfile(this)"><span class="acc-dot"></span><span class="acc-lbl">Organisation Profile</span></div><div class="acc-item" onclick="openManageAccounts()"><span class="acc-dot"></span><span class="acc-lbl">Manage Accounts</span></div></div></div><div class="acc-category" id="acc-accsettings"><button class="acc-header" onclick="document.getElementById('acc-accsettings').classList.toggle('open');var it=document.getElementById('items-acc-accsettings');if(it)it.classList.toggle('open')">Account Settings<span class="acc-toggle">&#8964;</span></button><div class="acc-items" id="items-acc-accsettings"><div class="acc-item" onclick="openRenameTagsView()"><span class="acc-dot"></span><span class="acc-lbl">Rename Tags</span></div><div class="acc-item" onclick="openUserDefaultPage()"><span class="acc-dot"></span><span class="acc-lbl">User Default Page</span></div></div></div><div class="acc-category" id="acc-users"><button class="acc-header" onclick="toggleAccordion('acc-users', 'sec-users')">Users & Teams<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">User Management</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot configured"></span><span class="acc-lbl">Role Hierarchy</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Permission Groups</span></div><div class="acc-item" onclick="selectItem(this, 'sec-users')"><span class="acc-dot pending"></span><span class="acc-lbl">Teams</span></div></div></div><div class="acc-category" id="acc-security"><button class="acc-header" onclick="toggleAccordion('acc-security', 'sec-security')">Security & Compliance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot configured"></span><span class="acc-lbl">Login Methods</span></div><div class="acc-item" onclick="selectItem(this, 'sec-security')"><span class="acc-dot pending"></span><span class="acc-lbl">SSO/SAML</span></div></div></div><div class="acc-category" id="acc-comms"><button class="acc-header" onclick="toggleAccordion('acc-comms', 'sec-comms')">Communication<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">WhatsApp National</span></div><div class="acc-item" onclick="selectItem(this, 'sec-comms')"><span class="acc-dot configured"></span><span class="acc-lbl">Email Provider</span></div></div></div><div class="acc-category" id="acc-leads"><button class="acc-header" onclick="toggleAccordion('acc-leads', 'sec-leads')">Leads & Enrollment<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-leads')"><span class="acc-dot configured"></span><span class="acc-lbl">Lead Stages</span></div></div></div><div class="acc-category" id="acc-marketing"><button class="acc-header" onclick="toggleAccordion('acc-marketing', 'sec-marketing')">Marketing<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-marketing')"><span class="acc-dot configured"></span><span class="acc-lbl">Campaign Config</span></div></div></div><div class="acc-category" id="acc-integrations"><button class="acc-header" onclick="toggleAccordion('acc-integrations', 'sec-integrations')">Integrations<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-integrations')"><span class="acc-dot configured"></span><span class="acc-lbl">API Tokens</span></div></div></div><div class="acc-category" id="acc-finance"><button class="acc-header" onclick="toggleAccordion('acc-finance', 'sec-finance')">Finance<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-finance')"><span class="acc-dot configured"></span><span class="acc-lbl">Payment Gateways</span></div></div></div><div class="acc-category" id="acc-data"><button class="acc-header" onclick="toggleAccordion('acc-data', 'sec-data')">Data Administration<span class="acc-toggle">⌄</span></button><div class="acc-items"><div class="acc-item" onclick="selectItem(this, 'sec-data')"><span class="acc-dot configured"></span><span class="acc-lbl">Master Data</span></div></div></div></div>
                 <div class="stg-detail-content"><div class="stg-section" id="sec-users" style="display: none;"><div class="stg-section-title">Users & Teams</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">👤</span><div class="stg-row-text"><div class="stg-row-name">User Management</div><div class="stg-row-desc">Manage user accounts</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Manage</button></div></div></div><div class="stg-section" id="sec-security" style="display: none;"><div class="stg-section-title">Security & Compliance</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🔐</span><div class="stg-row-text"><div class="stg-row-name">Login Methods</div><div class="stg-row-desc">Configure auth options</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-comms" style="display: none;"><div class="stg-section-title">Communication</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">💬</span><div class="stg-row-text"><div class="stg-row-name">WhatsApp National</div><div class="stg-row-desc">WhatsApp config</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-leads" style="display: none;"><div class="stg-section-title">Lead Management</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🎯</span><div class="stg-row-text"><div class="stg-row-name">Lead Stages</div><div class="stg-row-desc">Define pipeline stages</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-marketing" style="display: none;"><div class="stg-section-title">Marketing</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">📣</span><div class="stg-row-text"><div class="stg-row-name">Campaign Config</div><div class="stg-row-desc">Campaign parameters</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-integrations" style="display: none;"><div class="stg-section-title">Integrations</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🔌</span><div class="stg-row-text"><div class="stg-row-name">API Tokens</div><div class="stg-row-desc">Manage API credentials</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Manage</button></div></div></div><div class="stg-section" id="sec-finance" style="display: none;"><div class="stg-section-title">Finance</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">💳</span><div class="stg-row-text"><div class="stg-row-name">Payment Gateways</div><div class="stg-row-desc">Payment processors</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div><div class="stg-section" id="sec-data" style="display: none;"><div class="stg-section-title">Data Administration</div><div class="stg-row"><div class="stg-row-left"><span class="stg-row-icon">🗂️</span><div class="stg-row-text"><div class="stg-row-name">Master Data</div><div class="stg-row-desc">Core data management</div></div></div><div class="stg-row-right"><span class="stg-status configured">Configured</span><button class="stg-row-btn">Edit</button></div></div></div></div>
                 <div id="org-profile-form">
-                  <div class="org-form-header">
-                    <div><div class="org-form-title">Organization Details</div><div class="org-form-subtitle">Configure the basic details of the Organization like Name, Logo and Address</div></div>
-                    <button class="org-form-collapse" onclick="cancelToSettings()">↑</button>
-                  </div>
                   <div class="org-form-body">
                     <div class="org-form-group"><div class="org-form-group-title">Basic Information</div>
                       <div class="org-field"><div class="org-field-label">Slogan</div><div class="org-field-input"><input class="org-input" placeholder="Enter Account Slogan"></div></div>
@@ -1657,15 +2020,79 @@
 
                 <!-- Rename Tags -->
                 <div id="rename-tags-view">
-                  <div class="rt-header"><div class="rt-header-row"><div><div class="rt-title">System Rename Configurations</div><div class="rt-subtitle">Configure the below settings to Rename Tabs and Labels</div></div><button class="rt-collapse-btn" onclick="cancelToSettings()">&#8593;</button></div><div class="rt-tab-line"></div></div>
-                  <div class="rt-body">
-                    <div class="rt-section open" id="rt-opp"><div class="rt-section-head" onclick="toggleRtSection('rt-opp')"><span class="rt-section-name">Opportunity</span><span class="rt-section-chevron">&#8743;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Opportunity</td><td><input class="rt-input" value="Opportunity"></td><td><input class="rt-input" value="Opportunities"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
-                    <div class="rt-section" id="rt-pay"><div class="rt-section-head" onclick="toggleRtSection('rt-pay')"><span class="rt-section-name">Payment</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Payment</td><td><input class="rt-input" value="Payment"></td><td><input class="rt-input" value="Payments"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
-                    <div class="rt-section" id="rt-app"><div class="rt-section-head" onclick="toggleRtSection('rt-app')"><span class="rt-section-name">Application</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Application</td><td><input class="rt-input" value="Application"></td><td><input class="rt-input" value="Applications"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
-                    <div class="rt-section" id="rt-appt"><div class="rt-section-head" onclick="toggleRtSection('rt-appt')"><span class="rt-section-name">Applicant</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Applicant</td><td><input class="rt-input" value="Applicant"></td><td><input class="rt-input" value="Applicants"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
-                    <div class="rt-section" id="rt-inst"><div class="rt-section-head" onclick="toggleRtSection('rt-inst')"><span class="rt-section-name">Institute</span><span class="rt-section-chevron">&#8744;</span></div><div class="rt-section-body"><table class="rt-table"><thead><tr><th>System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th></th></tr></thead><tbody><tr><td>Institute</td><td><input class="rt-input" value="Institute"></td><td><input class="rt-input" value="Institutes"></td><td><button class="rt-save-btn">Save</button></td></tr></tbody></table></div></div>
+                  <div class="rt-page-hdr">
+                    <div class="rt-tabs">
+                      <div class="rt-tab active"  onclick="rtSwitchTab(this,'rt-tab-opportunity')">Opportunity</div>
+                      <div class="rt-tab" onclick="rtSwitchTab(this,'rt-tab-payment')">Payment</div>
+                      <div class="rt-tab" onclick="rtSwitchTab(this,'rt-tab-application')">Application</div>
+                      <div class="rt-tab" onclick="rtSwitchTab(this,'rt-tab-applicant')">Applicant</div>
+                      <div class="rt-tab" onclick="rtSwitchTab(this,'rt-tab-institute')">Institute</div>
+                    </div>
                   </div>
-                </div></div>
+
+                  <div id="rt-tab-opportunity" class="rt-body">
+                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-opportunity"></tbody></table>
+                  </div>
+                  <div id="rt-tab-payment" class="rt-body" style="display:none">
+                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-payment"></tbody></table>
+                  </div>
+                  <div id="rt-tab-application" class="rt-body" style="display:none">
+                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-application"></tbody></table>
+                  </div>
+                  <div id="rt-tab-applicant" class="rt-body" style="display:none">
+                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-applicant"></tbody></table>
+                  </div>
+                  <div id="rt-tab-institute" class="rt-body" style="display:none">
+                    <table class="rt-tbl"><thead><tr><th style="width:34%">System Tag</th><th>Singular Tag</th><th>Plural Tag</th><th style="width:60px"></th></tr></thead><tbody id="rtb-institute"></tbody></table>
+                  </div>
+                </div>
+
+                <!-- User Default Page -->
+                <div id="user-default-page-view">
+                  <div class="udp-body">
+
+                    <!-- Zone A: System Default Priority -->
+                    <div class="udp-zone-card">
+                      <div class="udp-zone-hdr">
+                        <div class="udp-zone-title">System Default Priority</div>
+                        <div class="udp-zone-sub">Drag to reorder · applied when no valid override is configured for a permission set</div>
+                      </div>
+                      <div id="udpSysContainer"></div>
+                    </div>
+
+                    <!-- Connector -->
+                    <div class="udp-connector">Fallback order — applied when no override is set or accessible</div>
+
+                    <!-- Zone B: Permission Set Overrides -->
+                    <div class="udp-zone-card">
+                      <div class="udp-zone-hdr">
+                        <div class="udp-zone-title">Permission Set Overrides</div>
+                        <div class="udp-zone-sub">Configure a specific landing page per role. Overrides the system default when set and accessible.</div>
+                      </div>
+                      <div class="udp-ov-head">
+                        <div class="udp-ov-th">Permission Set</div>
+                        <div class="udp-ov-th">Default Page</div>
+                        <div class="udp-ov-th"></div>
+                      </div>
+                      <div id="udpOverrideList"></div>
+                      <div class="udp-add-ov-wrap">
+                        <button class="udp-add-ov-btn" onclick="udpAddOverride()">
+                          <span style="width:18px;height:18px;border-radius:50%;border:1.5px solid #4f8ef7;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1">+</span>
+                          Add override
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="udp-footer">
+                      <span class="udp-footer-note" id="udpSaveStatus"></span>
+                      <button class="udp-save-btn" onclick="udpSave()">Save</button>
+                    </div>
+
+                  </div>
+                </div>
+
+                </div>
             </div>
         </div>
     </div>
@@ -1691,7 +2118,7 @@
         });
 
         const settingsBtn = document.getElementById('settingsBtn');
-        const stgCloseBtn = document.getElementById('stgCloseBtn');
+
         const stgBackBtn = document.getElementById('stgBackBtn');
         const stgHome = document.getElementById('stgHome');
         const stgDetailWrap = document.getElementById('stgDetailWrap');
@@ -1709,14 +2136,8 @@
             stgBackBtn.classList.remove('show'); var sep=document.getElementById('stgHdrSep'); if(sep) sep.style.display='none';
         });
 
-        stgCloseBtn.addEventListener('click', () => {
-            settingsView.classList.remove('open');
-        });
-
-        stgBackBtn.addEventListener('click', () => {
-            stgHome.style.display = 'grid';
-            stgDetailWrap.classList.remove('show');
-            stgBackBtn.classList.remove('show'); var sep=document.getElementById('stgHdrSep'); if(sep) sep.style.display='none';
+        stgBackBtn.addEventListener('click', function() {
+            cancelToSettings();
         });
 
         function openSection(sectionId, accordionId) {
@@ -1859,6 +2280,548 @@
                 }
             }
         });
+
+        // ── Recent Search ──────────────────────────────────────────
+        (function() {
+            var MAX_RECENT = 6;
+
+            // ── Settings index ──────────────────────────────────────
+            var SETTINGS_INDEX = [
+                { label: 'Organisation Profile',  category: 'Onboarding',            icon: '🏛️', action: function(){ openOrgProfile(null); } },
+                { label: 'Manage Accounts',        category: 'Onboarding',            icon: '👥', action: function(){ openManageAccounts(); } },
+                { label: 'Rename Tags',            category: 'Account Setup',         icon: '🏷️', action: function(){ openRenameTagsView(); } },
+                { label: 'User Default Page',      category: 'Account Setup',         icon: '⚙️', action: null },
+                { label: 'Custom Fields',          category: 'Account Setup',         icon: '⚙️', action: null },
+                { label: 'Display Preferences',    category: 'Account Setup',         icon: '⚙️', action: null },
+                { label: 'Notification Settings',  category: 'Account Setup',         icon: '🔔', action: null },
+                { label: 'User Management',        category: 'Users & Teams',         icon: '👤', action: function(){ openSection('sec-users','acc-users'); } },
+                { label: 'Role Hierarchy',         category: 'Users & Teams',         icon: '👥', action: function(){ openSection('sec-users','acc-users'); } },
+                { label: 'Permission Groups',      category: 'Users & Teams',         icon: '🔑', action: function(){ openSection('sec-users','acc-users'); } },
+                { label: 'Teams',                  category: 'Users & Teams',         icon: '👥', action: function(){ openSection('sec-users','acc-users'); } },
+                { label: 'Login Methods',          category: 'Security & Compliance', icon: '🔐', action: function(){ openSection('sec-security','acc-security'); } },
+                { label: 'SSO/SAML',               category: 'Security & Compliance', icon: '🔐', action: function(){ openSection('sec-security','acc-security'); } },
+                { label: 'TOTP Authenticator',     category: 'Security & Compliance', icon: '🔐', action: function(){ openSection('sec-security','acc-security'); } },
+                { label: 'IP Allowlist',           category: 'Security & Compliance', icon: '🛡️', action: function(){ openSection('sec-security','acc-security'); } },
+                { label: 'PII Masking',            category: 'Security & Compliance', icon: '🛡️', action: function(){ openSection('sec-security','acc-security'); } },
+                { label: 'Audit Trail',            category: 'Security & Compliance', icon: '📋', action: function(){ openSection('sec-security','acc-security'); } },
+                { label: 'WhatsApp National',      category: 'Communication',         icon: '💬', action: function(){ openSection('sec-comms','acc-comms'); } },
+                { label: 'WhatsApp International', category: 'Communication',         icon: '💬', action: function(){ openSection('sec-comms','acc-comms'); } },
+                { label: 'SMS/OTP',                category: 'Communication',         icon: '📱', action: function(){ openSection('sec-comms','acc-comms'); } },
+                { label: 'Email Provider',         category: 'Communication',         icon: '📧', action: function(){ openSection('sec-comms','acc-comms'); } },
+                { label: 'Telephony/IVR',          category: 'Communication',         icon: '📞', action: function(){ openSection('sec-comms','acc-comms'); } },
+                { label: 'Template Library',       category: 'Communication',         icon: '📄', action: function(){ openSection('sec-comms','acc-comms'); } },
+                { label: 'Lead Stages',            category: 'Leads & Enrollment',    icon: '🎯', action: function(){ openSection('sec-leads','acc-leads'); } },
+                { label: 'Lead Allocation',        category: 'Leads & Enrollment',    icon: '🎯', action: function(){ openSection('sec-leads','acc-leads'); } },
+                { label: 'Lead Score Rules',       category: 'Leads & Enrollment',    icon: '📊', action: function(){ openSection('sec-leads','acc-leads'); } },
+                { label: 'Registration Config',    category: 'Leads & Enrollment',    icon: '📝', action: function(){ openSection('sec-leads','acc-leads'); } },
+                { label: 'Campaign Config',        category: 'Marketing',             icon: '📣', action: function(){ openSection('sec-marketing','acc-marketing'); } },
+                { label: 'Landing Pages',          category: 'Marketing',             icon: '🌐', action: function(){ openSection('sec-marketing','acc-marketing'); } },
+                { label: 'Google Ads',             category: 'Marketing',             icon: '📣', action: function(){ openSection('sec-marketing','acc-marketing'); } },
+                { label: 'Meta/Facebook',          category: 'Marketing',             icon: '📣', action: function(){ openSection('sec-marketing','acc-marketing'); } },
+                { label: 'Referral Connect',       category: 'Marketing',             icon: '🔗', action: function(){ openSection('sec-marketing','acc-marketing'); } },
+                { label: 'Connectors',             category: 'Integrations',          icon: '🔌', action: function(){ openSection('sec-integrations','acc-integrations'); } },
+                { label: 'Webhooks',               category: 'Integrations',          icon: '🔌', action: function(){ openSection('sec-integrations','acc-integrations'); } },
+                { label: 'API Tokens',             category: 'Integrations',          icon: '🔑', action: function(){ openSection('sec-integrations','acc-integrations'); } },
+                { label: 'ERP Push',               category: 'Integrations',          icon: '🔌', action: function(){ openSection('sec-integrations','acc-integrations'); } },
+                { label: 'Fee Types',              category: 'Finance',               icon: '💳', action: function(){ openSection('sec-finance','acc-finance'); } },
+                { label: 'Payment Gateways',       category: 'Finance',               icon: '💳', action: function(){ openSection('sec-finance','acc-finance'); } },
+                { label: 'Discount Coupons',       category: 'Finance',               icon: '🏷️', action: function(){ openSection('sec-finance','acc-finance'); } },
+                { label: 'Wallet & Ledger',        category: 'Finance',               icon: '💰', action: function(){ openSection('sec-finance','acc-finance'); } },
+                { label: 'Master Data/Taxonomy',   category: 'Data Administration',   icon: '🗂️', action: function(){ openSection('sec-data','acc-data'); } },
+                { label: 'Tag Library',            category: 'Data Administration',   icon: '🏷️', action: function(){ openSection('sec-data','acc-data'); } },
+                { label: 'Custom Activities',      category: 'Data Administration',   icon: '🗂️', action: function(){ openSection('sec-data','acc-data'); } },
+                { label: 'Dynamic Reports',        category: 'Data Administration',   icon: '📊', action: function(){ openSection('sec-data','acc-data'); } },
+                { label: 'Archival Rules',         category: 'Data Administration',   icon: '🗃️', action: function(){ openSection('sec-data','acc-data'); } },
+            ];
+
+            var input    = document.getElementById('stgSearchInput');
+            var dropdown = document.getElementById('stgSearchDropdown');
+            var list     = document.getElementById('stgRecentList');
+            var clearBtn = document.getElementById('stgClearRecent');
+            var wrap     = document.getElementById('stgSearchWrap');
+            var ddHeader = document.querySelector('.stg-search-dd-header');
+
+            var recentSearches = [];
+
+            function escHtml(str) {
+                return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+            }
+
+            function highlight(text, query) {
+                if (!query) return escHtml(text);
+                var re = new RegExp('(' + query.replace(/[.*+?^${}()|[\]\\]/g,'\\$&') + ')', 'gi');
+                return escHtml(text).replace(re, '<mark style="background:#fef9c3;color:#92400e;border-radius:2px;padding:0 1px;">$1</mark>');
+            }
+
+            function positionDropdown() {
+                var rect = wrap.getBoundingClientRect();
+                dropdown.style.top   = (rect.bottom + 6) + 'px';
+                dropdown.style.left  = rect.left + 'px';
+                dropdown.style.width = rect.width + 'px';
+            }
+
+            // ── Render recent searches ──────────────────────────────
+            function renderRecent() {
+                ddHeader.style.display = '';
+                list.innerHTML = '';
+                if (recentSearches.length === 0) {
+                    list.innerHTML = '<div class="stg-search-dd-empty">No recent searches yet — try searching above</div>';
+                    clearBtn.style.display = 'none';
+                    return;
+                }
+                clearBtn.style.display = '';
+                recentSearches.forEach(function(term, idx) {
+                    var item = document.createElement('div');
+                    item.className = 'stg-search-dd-item';
+                    item.innerHTML =
+                        '<div class="stg-search-dd-icon">🕐</div>' +
+                        '<span class="stg-search-dd-text">' + escHtml(term) + '</span>' +
+                        '<button class="stg-search-dd-remove" title="Remove">✕</button>';
+                    item.querySelector('.stg-search-dd-text').addEventListener('mousedown', function(e) {
+                        e.preventDefault();
+                        input.value = term;
+                        renderResults(term);
+                    });
+                    item.querySelector('.stg-search-dd-remove').addEventListener('mousedown', function(e) {
+                        e.preventDefault(); e.stopPropagation();
+                        recentSearches.splice(idx, 1);
+                        renderRecent();
+                    });
+                    list.appendChild(item);
+                });
+            }
+
+            // ── Render search results ───────────────────────────────
+            function renderResults(query) {
+                ddHeader.style.display = 'none';
+                list.innerHTML = '';
+                var q = query.trim().toLowerCase();
+                if (!q) { ddHeader.style.display = ''; renderRecent(); return; }
+
+                var matches = SETTINGS_INDEX.filter(function(s) {
+                    return s.label.toLowerCase().indexOf(q) !== -1 ||
+                           s.category.toLowerCase().indexOf(q) !== -1;
+                });
+
+                if (matches.length === 0) {
+                    list.innerHTML = '<div class="stg-search-dd-empty">No results for "<strong>' + escHtml(query) + '</strong>"</div>';
+                    return;
+                }
+
+                matches.forEach(function(s) {
+                    var item = document.createElement('div');
+                    item.className = 'stg-search-dd-item';
+                    item.style.cursor = s.action ? 'pointer' : 'default';
+                    item.innerHTML =
+                        '<div class="stg-search-dd-icon">' + s.icon + '</div>' +
+                        '<div style="flex:1;min-width:0;">' +
+                            '<div class="stg-search-dd-text">' + highlight(s.label, query) + '</div>' +
+                            '<div style="font-size:11px;color:#9ca3af;margin-top:1px;">' + escHtml(s.category) + '</div>' +
+                        '</div>' +
+                        (s.action ? '<span style="font-size:11px;color:#c5cad4;">↗</span>' : '');
+                    if (s.action) {
+                        item.addEventListener('mousedown', function(e) {
+                            e.preventDefault();
+                            addRecent(query.trim());
+                            input.value = '';
+                            closeDropdown();
+                            s.action();
+                        });
+                    }
+                    list.appendChild(item);
+                });
+            }
+
+            function addRecent(term) {
+                if (!term) return;
+                recentSearches = recentSearches.filter(function(t) { return t !== term; });
+                recentSearches.unshift(term);
+                if (recentSearches.length > MAX_RECENT) recentSearches = recentSearches.slice(0, MAX_RECENT);
+            }
+
+            function openDropdown() {
+                positionDropdown();
+                var q = input.value.trim();
+                if (q) renderResults(q); else { ddHeader.style.display = ''; renderRecent(); }
+                dropdown.classList.add('visible');
+            }
+
+            function closeDropdown() {
+                dropdown.classList.remove('visible');
+            }
+
+            // ── Events ─────────────────────────────────────────────
+            input.addEventListener('focus', openDropdown);
+            input.addEventListener('click', openDropdown);
+
+            input.addEventListener('input', function() {
+                positionDropdown();
+                renderResults(input.value);
+                dropdown.classList.add('visible');
+            });
+
+            input.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && input.value.trim()) {
+                    addRecent(input.value.trim());
+                    input.value = '';
+                    ddHeader.style.display = '';
+                    renderRecent();
+                }
+                if (e.key === 'Escape') { closeDropdown(); input.blur(); }
+            });
+
+            clearBtn.addEventListener('mousedown', function(e) {
+                e.preventDefault();
+                recentSearches = [];
+                renderRecent();
+            });
+
+            document.addEventListener('mousedown', function(e) {
+                if (!wrap.contains(e.target) && !dropdown.contains(e.target)) closeDropdown();
+            });
+
+            // ⌘K / Ctrl+K
+            document.addEventListener('keydown', function(e) {
+                if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+                    var sv = document.getElementById('settings-view');
+                    if (sv && sv.classList.contains('open')) {
+                        e.preventDefault(); input.focus(); openDropdown();
+                    }
+                }
+            });
+        })();
+
+        // ── User Default Page ──────────────────────────────────────
+        var UDP_SYSTEM_PRIORITY = [
+            'Admin Dashboard','Lead Management','Application Manager',
+            'Manage Leads','Opportunity List','Campaign Dashboard',
+            'Reports and Analytics','Purchase Summary','User Dashboard'
+        ];
+
+        // Which pages each permission set can access
+        var UDP_ACCESS = {
+            'Admin':       ['Admin Dashboard','Lead Management','Application Manager','Manage Leads','Opportunity List','Campaign Dashboard','Reports and Analytics','Purchase Summary','User Dashboard'],
+            'Super Admin': ['Admin Dashboard','Lead Management','Application Manager','Manage Leads','Opportunity List','Campaign Dashboard','Reports and Analytics','Purchase Summary','User Dashboard'],
+            'Manager':     ['Lead Management','Application Manager','Manage Leads','Opportunity List','Reports and Analytics','Campaign Dashboard'],
+            'Counsellor':  ['Lead Management','Manage Leads','Opportunity List','User Dashboard'],
+            'Viewer':      ['Lead Management','Opportunity List'],
+            'Read Only':   ['Lead Management','Opportunity List','Reports and Analytics']
+        };
+        var UDP_ALL_PERMS = Object.keys(UDP_ACCESS);
+
+        // Permission set overrides: null page = no override (use system default)
+        var UDP_OVERRIDES = [
+            { perm: 'Admin',   page: 'Admin Dashboard' },
+            { perm: 'Manager', page: 'Lead Management' }
+        ];
+
+        var udpSysDragSrc = null;
+
+        // Compute effective page + status for a given override row
+        function udpEffective(permSet, overridePage) {
+            var access = UDP_ACCESS[permSet] || [];
+            if (overridePage && access.indexOf(overridePage) !== -1) {
+                return { page: overridePage, status: 'custom' };
+            }
+            // walk system priority for first accessible page
+            for (var i = 0; i < UDP_SYSTEM_PRIORITY.length; i++) {
+                if (access.indexOf(UDP_SYSTEM_PRIORITY[i]) !== -1) {
+                    return {
+                        page: UDP_SYSTEM_PRIORITY[i],
+                        status: overridePage ? 'no-access' : 'system'
+                    };
+                }
+            }
+            return { page: '—', status: 'system' };
+        }
+
+        // ── Zone A: System Default Priority ────────────────────────
+        var UDP_ALL_PAGES = ['Admin Dashboard','Lead Management','Application Manager','Manage Leads','Opportunity List','Campaign Dashboard','Reports and Analytics','Purchase Summary','User Dashboard'];
+
+        function udpRenderSys() {
+            var container = document.getElementById('udpSysContainer');
+            if (!container) return;
+            container.innerHTML = '';
+
+            // Rows
+            var list = document.createElement('div');
+            list.id = 'udpSysList';
+            UDP_SYSTEM_PRIORITY.forEach(function(page, idx) {
+                var row = document.createElement('div');
+                row.className = 'udp-sys-row';
+                row.draggable = true;
+                row.dataset.idx = idx;
+                row.innerHTML =
+                    '<div class="udp-drag-handle">' +
+                        '<div class="udp-drag-dot"></div><div class="udp-drag-dot"></div>' +
+                        '<div class="udp-drag-dot"></div><div class="udp-drag-dot"></div>' +
+                        '<div class="udp-drag-dot"></div><div class="udp-drag-dot"></div>' +
+                    '</div>' +
+                    '<div class="udp-sys-num">' + (idx + 1) + '</div>' +
+                    '<div class="udp-sys-name">' + page + '</div>' +
+                    '<button class="udp-del-btn" style="margin:0 auto" onclick="udpRemoveSysPage(' + idx + ')" title="Remove">&#8722;</button>';
+
+                row.addEventListener('dragstart', function(e) {
+                    udpSysDragSrc = idx;
+                    row.classList.add('dragging');
+                    e.dataTransfer.effectAllowed = 'move';
+                });
+                row.addEventListener('dragend', function() {
+                    row.classList.remove('dragging');
+                    container.querySelectorAll('.udp-sys-row').forEach(function(r){ r.classList.remove('drag-over'); });
+                });
+                row.addEventListener('dragover', function(e) {
+                    e.preventDefault();
+                    container.querySelectorAll('.udp-sys-row').forEach(function(r){ r.classList.remove('drag-over'); });
+                    row.classList.add('drag-over');
+                });
+                row.addEventListener('drop', function(e) {
+                    e.preventDefault();
+                    var target = parseInt(row.dataset.idx);
+                    if (udpSysDragSrc === null || udpSysDragSrc === target) return;
+                    var moved = UDP_SYSTEM_PRIORITY.splice(udpSysDragSrc, 1)[0];
+                    UDP_SYSTEM_PRIORITY.splice(target, 0, moved);
+                    udpSysDragSrc = null;
+                    udpRenderSys();
+                    udpRenderOverrides();
+                });
+                list.appendChild(row);
+            });
+            container.appendChild(list);
+
+            // Add page row
+            var available = UDP_ALL_PAGES.filter(function(p){ return UDP_SYSTEM_PRIORITY.indexOf(p) === -1; });
+            var addWrap = document.createElement('div');
+            addWrap.className = 'udp-add-ov-wrap';
+            if (available.length > 0) {
+                addWrap.innerHTML =
+                    '<div style="display:flex;align-items:center;gap:10px">' +
+                        '<button class="udp-add-ov-btn" onclick="udpShowSysAdd()">' +
+                            '<span style="width:18px;height:18px;border-radius:50%;border:1.5px solid #4f8ef7;display:inline-flex;align-items:center;justify-content:center;font-size:14px;line-height:1">+</span>' +
+                            ' Add page' +
+                        '</button>' +
+                        '<div id="udpSysAddWrap" style="display:none;flex:1;max-width:260px;position:relative">' +
+                            '<select id="udpSysAddSelect" class="udp-ov-select" style="width:100%">' +
+                                '<option value="" disabled selected>Select page to add</option>' +
+                                available.map(function(p){ return '<option value="' + p + '">' + p + '</option>'; }).join('') +
+                            '</select>' +
+                            '<div style="position:absolute;right:10px;top:50%;transform:translateY(-50%);pointer-events:none;border-left:4px solid transparent;border-right:4px solid transparent;border-top:5px solid #9ca3af"></div>' +
+                        '</div>' +
+                        '<button id="udpSysAddConfirm" style="display:none;height:34px;padding:0 16px;border-radius:7px;border:none;background:#4f8ef7;color:#fff;font-size:13px;font-weight:600;cursor:pointer" onclick="udpConfirmSysAdd()">Add</button>' +
+                    '</div>';
+            } else {
+                addWrap.innerHTML = '<span style="font-size:12px;color:#9ca3af">All pages are already in the priority list.</span>';
+            }
+            container.appendChild(addWrap);
+        }
+
+        function udpShowSysAdd() {
+            var wrap = document.getElementById('udpSysAddWrap');
+            var btn  = document.getElementById('udpSysAddConfirm');
+            if (wrap) wrap.style.display = 'block';
+            if (btn)  btn.style.display  = 'inline-block';
+            if (wrap) wrap.querySelector('select').focus();
+        }
+
+        function udpConfirmSysAdd() {
+            var sel = document.getElementById('udpSysAddSelect');
+            if (!sel || !sel.value) return;
+            UDP_SYSTEM_PRIORITY.push(sel.value);
+            udpRenderSys();
+            udpRenderOverrides();
+        }
+
+        function udpRemoveSysPage(idx) {
+            if (UDP_SYSTEM_PRIORITY.length <= 1) return;
+            UDP_SYSTEM_PRIORITY.splice(idx, 1);
+            udpRenderSys();
+            udpRenderOverrides();
+        }
+
+        // ── Zone B: Permission Set Overrides ───────────────────────
+        function udpRenderOverrides() {
+            var list = document.getElementById('udpOverrideList');
+            if (!list) return;
+            list.innerHTML = '';
+
+            UDP_OVERRIDES.forEach(function(ov, idx) {
+                var eff        = udpEffective(ov.perm, ov.page);
+                var warnClass  = eff.status === 'no-access' ? ' warn' : '';
+                var effClass   = eff.status === 'no-access' ? ' no-access' : '';
+                var usedPerms  = UDP_OVERRIDES.map(function(o, i){ return i !== idx ? o.perm : null; }).filter(Boolean);
+
+                // Permission set dropdown options
+                var permOptions = [''].concat(UDP_ALL_PERMS).map(function(p) {
+                    var sel      = p === ov.perm ? ' selected' : '';
+                    var disabled = !p ? ' disabled' : '';
+                    var label    = p || '— Select permission set —';
+                    var grayed   = usedPerms.indexOf(p) !== -1 ? ' style="color:#d1d5db"' : '';
+                    return '<option value="' + p + '"' + sel + disabled + grayed + '>' + label + '</option>';
+                }).join('');
+
+                // Override page dropdown options (filtered by perm access)
+                var accessiblePages = ov.perm ? (UDP_ACCESS[ov.perm] || []) : [];
+                var pageOptions = ([''].concat(UDP_SYSTEM_PRIORITY)).map(function(p) {
+                    if (!p) return '<option value="" disabled' + (!ov.page ? ' selected' : '') + '>Select default page</option>';
+                    var sel      = ov.page === p ? ' selected' : '';
+                    var noAccess = accessiblePages.length && accessiblePages.indexOf(p) === -1;
+                    var grayed   = noAccess ? ' style="color:#d1d5db"' : '';
+                    var suffix   = noAccess ? ' (no access)' : '';
+                    return '<option value="' + p + '"' + sel + grayed + '>' + p + suffix + '</option>';
+                }).join('');
+
+                var row = document.createElement('div');
+                row.className = 'udp-ov-row';
+                row.innerHTML =
+                    // Col 1: Permission set dropdown
+                    '<div class="udp-ov-select-wrap">' +
+                        '<select class="udp-ov-select" onchange="udpSetPerm(' + idx + ',this.value)">' +
+                            permOptions +
+                        '</select>' +
+                    '</div>' +
+                    // Col 2: Default page dropdown
+                    '<div class="udp-ov-select-wrap">' +
+                        '<select class="udp-ov-select' + warnClass + '" ' + (!ov.perm ? 'disabled style="opacity:.5"' : '') + ' onchange="udpSetPage(' + idx + ',this.value)">' +
+                            pageOptions +
+                        '</select>' +
+                    '</div>' +
+                    // Col 3: Delete
+                    '<button class="udp-del-btn" onclick="udpDeleteOverride(' + idx + ')" title="Remove row">&#8722;</button>';
+
+                list.appendChild(row);
+
+                // Inline warning row for no-access
+                if (eff.status === 'no-access') {
+                    var warn = document.createElement('div');
+                    warn.style.cssText = 'padding:0 16px 8px;font-size:11px;color:#d97706;display:flex;align-items:center;gap:5px;margin-top:-6px';
+                    warn.innerHTML = '<span>⚠</span> This role has no access to the selected page — system default will be used instead.';
+                    list.appendChild(warn);
+                }
+            });
+        }
+
+        function udpSetPerm(idx, val) {
+            UDP_OVERRIDES[idx].perm = val;
+            UDP_OVERRIDES[idx].page = null; // reset page when perm changes
+            udpRenderOverrides();
+        }
+
+        function udpSetPage(idx, val) {
+            UDP_OVERRIDES[idx].page = val || null;
+            udpRenderOverrides();
+        }
+
+        function udpDeleteOverride(idx) {
+            UDP_OVERRIDES.splice(idx, 1);
+            udpRenderOverrides();
+        }
+
+        function udpAddOverride() {
+            UDP_OVERRIDES.push({ perm: '', page: null });
+            udpRenderOverrides();
+            // Focus the new perm dropdown
+            var rows = document.querySelectorAll('#udpOverrideList .udp-ov-row');
+            if (rows.length) rows[rows.length - 1].querySelector('select').focus();
+        }
+
+        function udpSave() {
+            var status = document.getElementById('udpSaveStatus');
+            if (status) { status.textContent = '✓ Saved'; setTimeout(function(){ status.textContent = ''; }, 2500); }
+        }
+
+        var _origOpenUdp = window.openUserDefaultPage;
+        window.openUserDefaultPage = function() {
+            _origOpenUdp();
+            setTimeout(function(){
+                udpRenderSys();
+                udpRenderOverrides();
+            }, 0);
+            trackVisit('User Default Page', function(){ openUserDefaultPage(); });
+        };
+
+        // ── Recent Visits ──────────────────────────────────────────
+        (function() {
+            var MAX_VISITS = 5;
+            var recentVisits = [];   // [{ label, action }]
+            var currentLabel = null;
+
+            var bar   = document.getElementById('stgRecentBar');
+            var pills = document.getElementById('stgRecentPills');
+
+            function renderPills() {
+                pills.innerHTML = '';
+                if (recentVisits.length === 0) { bar.classList.remove('visible'); return; }
+                bar.classList.add('visible');
+                recentVisits.forEach(function(v) {
+                    var pill = document.createElement('span');
+                    pill.className = 'stg-recent-pill' + (v.label === currentLabel ? ' active-pill' : '');
+                    pill.textContent = v.label;
+                    pill.addEventListener('click', function() { v.action(); });
+                    pills.appendChild(pill);
+                });
+            }
+
+            // Public: call this from every navigation action
+            window.trackVisit = function(label, actionFn) {
+                currentLabel = label;
+                // Remove duplicate
+                recentVisits = recentVisits.filter(function(v) { return v.label !== label; });
+                recentVisits.unshift({ label: label, action: actionFn });
+                if (recentVisits.length > MAX_VISITS) recentVisits = recentVisits.slice(0, MAX_VISITS);
+                renderPills();
+            };
+
+            // Hide bar when back to settings home
+            var origCancel = window.cancelToSettings;
+            window.cancelToSettings = function() {
+                origCancel();
+                currentLabel = null;
+                renderPills();
+            };
+        })();
+
+        // Patch navigation functions to track visits
+        (function() {
+            var _orig_openOrgProfile = window.openOrgProfile;
+            window.openOrgProfile = function(el) {
+                _orig_openOrgProfile(el);
+                trackVisit('Organisation Profile', function(){ openOrgProfile(null); });
+            };
+
+            var _orig_openManageAccounts = window.openManageAccounts;
+            window.openManageAccounts = function() {
+                _orig_openManageAccounts();
+                trackVisit('Manage Accounts', function(){ openManageAccounts(); });
+            };
+
+            var _orig_openRenameTagsView = window.openRenameTagsView;
+            window.openRenameTagsView = function() {
+                _orig_openRenameTagsView();
+                trackVisit('Rename Tags', function(){ openRenameTagsView(); });
+            };
+
+            var _orig_openUserDefaultPage = window.openUserDefaultPage;
+            window.openUserDefaultPage = function() {
+                _orig_openUserDefaultPage();
+            };
+
+            var _orig_openSection = window.openSection;
+            window.openSection = function(sectionId, accordionId) {
+                _orig_openSection(sectionId, accordionId);
+                var labelMap = {
+                    'sec-users':        'User Management',
+                    'sec-security':     'Security & Compliance',
+                    'sec-comms':        'Communication',
+                    'sec-leads':        'Leads & Enrollment',
+                    'sec-marketing':    'Marketing',
+                    'sec-integrations': 'Integrations',
+                    'sec-finance':      'Finance',
+                    'sec-data':         'Data Administration'
+                };
+                var lbl = labelMap[sectionId] || sectionId;
+                trackVisit(lbl, function(){ openSection(sectionId, accordionId); });
+            };
+        })();
     </script>
 </body>
 </html>
