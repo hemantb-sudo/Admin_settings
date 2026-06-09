@@ -217,7 +217,7 @@
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 1000;
+            z-index: 3000;
             flex-shrink: 0;
         }
 
@@ -358,13 +358,69 @@
             border-radius: 50%;
         }
 
+        .tn-avatar-wrap {
+            position: relative;
+        }
         .tn-avatar {
             width: 32px;
             height: 32px;
             background: #4f8ef7;
             border-radius: 50%;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            user-select: none;
         }
+        .tn-avatar:hover { background: #3a7ee0; }
+        .profile-dropdown {
+            display: none;
+            position: fixed;
+            top: 52px;
+            right: 12px;
+            background: #fff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            min-width: 200px;
+            z-index: 10000;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.12);
+            overflow: hidden;
+        }
+        .profile-dropdown.open { display: block; }
+        .pd-header {
+            padding: 12px 14px 10px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        .pd-name { font-size: 13px; font-weight: 600; color: #111827; }
+        .pd-role { font-size: 11px; color: #9ca3af; margin-top: 2px; }
+        .pd-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 14px;
+            font-size: 13px;
+            color: #374151;
+            cursor: pointer;
+        }
+        .pd-item:hover { background: #f9fafb; }
+        .pd-item.highlight { color: #185fa5; font-weight: 500; }
+        .pd-item.highlight:hover { background: #f0f7ff; }
+        .pd-item-icon { font-size: 14px; flex-shrink: 0; }
+        .pd-new-badge {
+            font-size: 9px;
+            font-weight: 700;
+            background: #e53935;
+            color: #fff;
+            border-radius: 4px;
+            padding: 1px 5px;
+            letter-spacing: .3px;
+            line-height: 14px;
+            margin-left: 2px;
+        }
+        .pd-sep { height: 1px; background: #f3f4f6; }
 
         /* ============ MAIN LAYOUT ============ */
         .layout {
@@ -471,6 +527,15 @@
             flex: 1;
             overflow-y: auto;
             padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+        #page-dashboard {
+            flex: 1;
+        }
+        #page-usage {
+            margin: -20px;
+            overflow-y: auto;
         }
 
         .page-header {
@@ -2162,6 +2227,152 @@
             border-color: #bfdbfe;
             font-weight: 600;
         }
+
+        /* ============ USAGE PAGE CSS VARS ============ */
+        :root {
+          --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+          --brand-blue: #2979d4;
+          --status-active: #1a9e6e;
+          --status-pause: #e8900a;
+          --status-stopped: #d94040;
+          --bg-app: #eef0f4;
+          --bg-surface: #ffffff;
+          --bg-subtle: #FAFAFA;
+          --fg-1: #111827;
+          --fg-2: #374151;
+          --fg-3: #6B7280;
+          --fg-4: #9CA3AF;
+          --fg-5: #D1D5DB;
+          --border-1: #E5E7EB;
+          --border-2: #F3F4F6;
+          --radius-xs: 4px;
+          --radius-sm: 6px;
+          --radius-md: 8px;
+          --radius-lg: 10px;
+          --radius-pill: 999px;
+          --shadow-md: 0 4px 14px rgba(0,0,0,0.09);
+        }
+
+        /* ============ USAGE PAGE STYLES ============ */
+        .usage-page{padding:24px 28px 48px;min-height:100%;overflow-y:auto;}
+        .usage-page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px}
+        .usage-heading{font-size:18px;font-weight:600;color:var(--fg-1);letter-spacing:-.01em}
+        .usage-heading-sub{font-size:12px;color:var(--fg-3);margin-top:3px}
+        .summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px}
+        .s-card{background:var(--bg-surface);border:1px solid var(--border-1);border-radius:var(--radius-lg);padding:16px 18px}
+        .s-card-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--fg-4);margin-bottom:10px}
+        .s-card-val{font-size:24px;font-weight:700;color:var(--fg-1);line-height:1.1;margin-bottom:3px}
+        .s-card-sub{font-size:11px;color:var(--fg-3);line-height:1.5}
+        .s-card.featured{background:linear-gradient(140deg,#f0f7ff 0%,#e8effc 100%);border-color:#c5d8f0}
+        .s-card.featured .s-card-val{color:#185fa5;font-size:17px;font-weight:600;margin-top:2px}
+        .plan-pill{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:3px 11px;border-radius:var(--radius-pill);background:var(--brand-blue);color:#fff;margin-top:8px}
+        .s-card-breakdown{display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:8px}
+        .s-dot-item{display:flex;align-items:center;gap:4px;font-size:11px;color:var(--fg-3)}
+        .s-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+        .sub-bar{height:3px;background:var(--border-1);border-radius:2px;margin:10px 0 6px;overflow:hidden}
+        .sub-bar-fill{height:100%;background:var(--brand-blue);border-radius:2px}
+        .alert-lines{display:flex;flex-direction:column;gap:5px;margin-top:8px}
+        .alert-line{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--fg-2)}
+        .alert-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+        .all-ok{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;color:var(--status-active);margin-top:8px}
+        .ctrl-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;gap:10px;flex-wrap:wrap}
+        .ctrl-left{display:flex;align-items:center;gap:8px}
+        .sec-title{font-size:13px;font-weight:600;color:var(--fg-1)}
+        .count-pill{font-size:11px;color:var(--fg-4);background:var(--bg-surface);border:0.5px solid var(--border-1);border-radius:var(--radius-pill);padding:2px 9px}
+        .ctrl-right{display:flex;align-items:center;gap:6px}
+        .search-wrap{display:flex;align-items:center;gap:6px;background:var(--bg-surface);border:1px solid var(--border-1);border-radius:var(--radius-md);padding:5px 10px}
+        .search-wrap input{border:none;outline:none;font-size:12px;color:var(--fg-1);background:transparent;width:170px;font-family:var(--font-sans)}
+        .search-wrap input::placeholder{color:var(--fg-5)}
+        .filter-wrap{position:relative}
+        .filter-btn{display:flex;align-items:center;gap:6px;background:var(--bg-surface);border:1px solid var(--border-1);border-radius:var(--radius-md);padding:5px 11px;cursor:pointer;font-size:12px;color:var(--fg-2);white-space:nowrap;user-select:none}
+        .filter-btn:hover{border-color:#aab;color:var(--fg-1)}
+        .filter-btn.filtered{background:#f0f7ff;border-color:#b5d4f4;color:#185fa5}
+        .f-caret{width:0;height:0;border-left:3px solid transparent;border-right:3px solid transparent;border-top:4px solid currentColor;margin-left:2px}
+        .filter-menu{display:none;position:absolute;top:calc(100% + 5px);left:0;background:var(--bg-surface);border:1px solid var(--border-1);border-radius:var(--radius-md);min-width:200px;z-index:300;padding:4px 0;box-shadow:var(--shadow-md)}
+        .filter-menu.open{display:block}
+        .fopt{display:flex;align-items:center;gap:8px;padding:8px 12px;font-size:12px;color:var(--fg-2);cursor:pointer}
+        .fopt:hover{background:var(--bg-subtle)}
+        .fopt.sel{color:#185fa5;font-weight:500;background:#f0f7ff}
+        .fcheck{width:14px;height:14px;border-radius:3px;border:1.5px solid var(--border-1);flex-shrink:0;display:flex;align-items:center;justify-content:center}
+        .fopt.sel .fcheck{background:#185fa5;border-color:#185fa5}
+        .fdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+        .tgl-group{display:flex;align-items:center;border:1px solid var(--border-1);border-radius:var(--radius-md);overflow:hidden;background:var(--bg-surface);flex-shrink:0}
+        .tgl-btn{font-size:12px;padding:5px 12px;color:var(--fg-2);cursor:pointer;display:flex;align-items:center;gap:5px;border:none;background:transparent;white-space:nowrap;font-family:var(--font-sans)}
+        .tgl-btn:hover{background:var(--bg-subtle)}
+        .tgl-btn.active{background:#0f1d35;color:#e8edf4}
+        .tgl-btn:first-child{border-right:1px solid var(--border-1)}
+        .mod-list{display:flex;flex-direction:column;gap:8px}
+        .mod-card{background:var(--bg-surface);border:1px solid var(--border-1);border-radius:var(--radius-lg);overflow:hidden}
+        .mod-card.is-addon{border-color:#c8c4f0}
+        .mod-hdr{display:flex;align-items:center;gap:12px;padding:11px 16px;cursor:pointer;user-select:none;transition:background .12s}
+        .mod-hdr:hover{background:var(--bg-subtle)}
+        .mod-card.open .mod-hdr{border-bottom:1px solid var(--border-2)}
+        .mod-card.is-addon .mod-hdr{background:#faf9ff}
+        .mod-badge{font-size:10px;font-weight:700;padding:4px 8px;border-radius:var(--radius-sm);flex-shrink:0;letter-spacing:.3px}
+        .mod-name-wrap{flex:1;min-width:0;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+        .mod-name{font-size:13px;font-weight:600;color:var(--fg-1)}
+        .addon-mod-chip{font-size:10px;padding:2px 7px;border-radius:var(--radius-xs);background:#eeedfe;color:#3c3489;border:0.5px solid #afa9ec;font-weight:400;flex-shrink:0}
+        .mod-hdr-right{display:flex;align-items:center;gap:6px;flex-shrink:0}
+        .mod-feat-count{font-size:11px;color:var(--fg-4);white-space:nowrap;padding-left:4px}
+        .hdr-cap-badge{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--radius-pill);white-space:nowrap}
+        .hdr-cap-badge.warn{background:#FEF3C7;color:#92400E}
+        .hdr-cap-badge.crit{background:#FEE2E2;color:#991B1B}
+        .hdr-addon-pill{font-size:10px;color:var(--fg-4);background:var(--bg-app,#eef0f4);padding:2px 8px;border-radius:var(--radius-pill);border:0.5px solid var(--border-1);white-space:nowrap}
+        .mod-arr{display:flex;align-items:center;color:var(--fg-5);transition:transform .2s;flex-shrink:0;margin-left:2px}
+        .mod-card.open .mod-arr{transform:rotate(180deg)}
+        .mod-body{display:none}
+        .mod-card.open .mod-body{display:block}
+        .sec-block{border-top:1px solid var(--border-2)}
+        .sec-block-hdr{display:flex;align-items:center;gap:8px;padding:7px 16px;background:var(--bg-app,#eef0f4)}
+        .mod-card.is-addon .sec-block-hdr{background:#f7f6fe}
+        .sec-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--fg-4)}
+        .sec-count{font-size:10px;font-weight:600;padding:1px 7px;border-radius:var(--radius-pill);background:var(--border-1);color:var(--fg-3)}
+        .ft{width:100%}
+        .ft-row{display:flex;align-items:center;border-bottom:1px solid var(--border-2)}
+        .ft-row:last-child{border-bottom:none}
+        .ft-row:hover{background:#fafbfd}
+        .ft-name-col{flex:1;min-width:0;padding:9px 8px 9px 16px;overflow:hidden}
+        .ft-name{font-size:13px;font-weight:500;color:var(--fg-1);line-height:1.35;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+        .ft-badge-col{width:80px;flex-shrink:0;padding:9px 8px;display:flex;align-items:center;justify-content:center}
+        .ft-status-col{width:300px;flex-shrink:0;padding:9px 16px 9px 8px;display:flex;align-items:center;justify-content:flex-end}
+        .tb{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:var(--radius-xs);letter-spacing:.2px;white-space:nowrap}
+        .tb-plan{background:#DCFCE7;color:#14532D}
+        .tb-comp{background:#F3F4F6;color:#374151}
+        .tb-inaddon{background:#EDE9FE;color:#4C1D95}
+        .tb-paid{background:#FEF3C7;color:#92400E}
+        .si{display:inline-flex;align-items:center;gap:4px;font-size:12px;white-space:nowrap}
+        .si-enabled{color:var(--status-active);font-weight:500}
+        .si-comp{color:var(--fg-3)}
+        .si-active{color:#534ab7;font-weight:500}
+        .si-paid{color:#854f0b;font-weight:500}
+        .cap-cell{display:flex;flex-direction:column;align-items:flex-end;gap:4px;width:100%}
+        .cap-top{display:flex;align-items:center;gap:8px;width:100%}
+        .cap-bar{position:relative;flex:1;height:6px;border-radius:3px}
+        .cap-track{width:100%;height:100%;border-radius:3px;overflow:hidden;background:var(--border-1)}
+        .cap-fill{height:100%;transition:width .3s ease}
+        .cap-fill.ok{background:var(--status-active)}
+        .cap-fill.warn{background:var(--status-pause)}
+        .cap-fill.crit{background:var(--status-stopped)}
+        .cap-plan-line{position:absolute;top:50%;transform:translate(-50%,-50%);width:1.5px;height:11px;background:#8B5CF6;border-radius:1px;z-index:1;opacity:.7}
+        .cap-pct{font-size:13px;font-weight:700;width:36px;text-align:right;flex-shrink:0;letter-spacing:-.3px}
+        .cap-pct.ok{color:var(--status-active)}
+        .cap-pct.warn{color:var(--status-pause)}
+        .cap-pct.crit{color:var(--status-stopped)}
+        .cap-bottom{display:flex;align-items:center;justify-content:space-between;width:100%}
+        .cap-chips{display:flex;align-items:center;gap:4px}
+        .cap-plan-chip{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:1px 7px;border-radius:3px;background:#DCFCE7;color:#14532D;border:0.5px solid #BBF7D0;white-space:nowrap}
+        .cap-addon-chip{display:inline-flex;align-items:center;font-size:10px;font-weight:500;padding:1px 7px;border-radius:3px;background:#EDE9FE;color:#4C1D95;border:0.5px solid #C4B5FD;white-space:nowrap}
+        .cap-used-text{font-size:11px;color:var(--fg-4);flex-shrink:0}
+        .payg{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:2px 9px;border-radius:var(--radius-xs)}
+        .payg.plan-usage{background:#FEF3C7;color:#92400E;border:0.5px solid #FDE68A}
+        .payg.addon-usage{background:#EDE9FE;color:#4C1D95;border:0.5px solid #C4B5FD}
+        .payg.paid-usage{background:#FEF3C7;color:#92400E;border:0.5px solid #FDE68A}
+        .addon-sec-block .sec-block-hdr{background:#FFFDF5}
+        .mod-card.is-addon .addon-sec-block .sec-block-hdr{background:#f7f6fe}
+        #page-usage{display:none;flex:1;overflow:hidden;flex-direction:column;}
+        #page-usage.active{display:flex;}
+        #page-dashboard{display:block;}
+        #page-dashboard.hidden{display:none;}
 </style>
 </head>
 <body>
@@ -2185,7 +2396,29 @@
                 <button class="tn-icon-btn" id="settingsBtn">⚙️</button>
                 <button class="tn-icon-btn">❓</button>
                 <button class="tn-icon-btn has-notification">🔔</button>
-                <div class="tn-avatar"></div>
+                <div class="tn-avatar-wrap" id="profileWrap">
+                    <div class="tn-avatar" id="profileBtn" onclick="toggleProfileMenu()">RA</div>
+                    <div class="profile-dropdown" id="profileDropdown">
+                        <div class="pd-header">
+                            <div class="pd-name">Rahul Anand</div>
+                            <div class="pd-role">Customer Success Manager</div>
+                        </div>
+                        <div class="pd-item highlight" onclick="showPage('usage');closeProfileMenu()">
+                            <span class="pd-item-icon">🏠</span>
+                            Subscription and Usage
+                            <span class="pd-new-badge">NEW</span>
+                        </div>
+                        <div class="pd-sep"></div>
+                        <div class="pd-item" onclick="closeProfileMenu()">
+                            <span class="pd-item-icon">👤</span>
+                            Profile
+                        </div>
+                        <div class="pd-item" style="color:#e24b4a" onclick="closeProfileMenu()">
+                            <span class="pd-item-icon">↪️</span>
+                            Sign out
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </nav>
@@ -2213,10 +2446,13 @@
                 <a class="sb-item" href="#"><span class="sb-item-icon">📊</span><span class="sb-item-label">Reports and Analytics</span><span class="sb-tooltip">Reports and Analytics</span></a>
                 <a class="sb-item" href="#"><span class="sb-item-icon">📈</span><span class="sb-item-label">Communication Performance</span><span class="sb-tooltip">Communication Performance</span></a>
                 <a class="sb-item" href="#"><span class="sb-item-icon">🏷️</span><span class="sb-item-label">Manage Scorecard</span><span class="sb-tooltip">Manage Scorecard</span></a>
+                <a class="sb-item" id="sb-usage" href="#" onclick="showPage('usage');event.preventDefault();"><span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" style="vertical-align:middle"><path d="M1.5 12V6L8 2.5 14.5 6V12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="6" y="8.5" width="4" height="3.5" rx=".5" stroke="currentColor" stroke-width="1.2"/></svg></span><span class="sb-item-label">Subscription &amp; Usage</span><span class="sb-tooltip">Subscription &amp; Usage</span></a>
             </div>
         </aside>
 
-        <main class="main">
+        <main class="main" id="mainContent">
+            <div id="page-usage"><div class="usage-page" id="usageContent"></div></div>
+            <div id="page-dashboard">
             <div class="page-header">
                 <h1>Admin Dashboard</h1>
                 <div class="header-right">
@@ -2251,6 +2487,7 @@
                 <div class="card"><div class="card-title">Stage Pipeline</div><div class="pipeline-item"><span class="pipeline-label">New</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 60%; background: #3b82f6;"></div></div><span class="pipeline-count">842</span></div><div class="pipeline-item"><span class="pipeline-label">Hot</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 44%; background: #ef4444;"></div></div><span class="pipeline-count">614</span></div><div class="pipeline-item"><span class="pipeline-label">Warm</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 38%; background: #f59e0b;"></div></div><span class="pipeline-count">527</span></div><div class="pipeline-item"><span class="pipeline-label">Cold</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 23%; background: #9ca3af;"></div></div><span class="pipeline-count">318</span></div><div class="pipeline-item"><span class="pipeline-label">Applied</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 35%; background: #8b5cf6;"></div></div><span class="pipeline-count">489</span></div><div class="pipeline-item"><span class="pipeline-label">Enrolled</span><div class="pipeline-bar"><div class="pipeline-fill" style="width: 18%; background: #10b981;"></div></div><span class="pipeline-count">246</span></div></div>
                 <div class="card"><div class="card-title">Counsellor Performance</div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Priyank Mehta</span><span class="counsellor-stats">28 leads | 15 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 85%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Ritika Joshi</span><span class="counsellor-stats">24 leads | 12 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 75%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Suresh Nair</span><span class="counsellor-stats">32 leads | 18 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 95%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Kavya Reddy</span><span class="counsellor-stats">20 leads | 8 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 55%;"></div></div></div><div class="counsellor-item"><div class="counsellor-header"><span class="counsellor-name">Arjun Kapoor</span><span class="counsellor-stats">26 leads | 14 conv.</span></div><div class="counsellor-mini-bar"><div class="counsellor-mini-fill" style="width: 80%;"></div></div></div></div>
             </div>
+            </div><!-- end page-dashboard -->
         </main>
     </div>
 
@@ -2527,6 +2764,10 @@
                 e.preventDefault();
                 document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
                 item.classList.add('active');
+                // If it's not the usage item, show dashboard
+                if (item.id !== 'sb-usage') {
+                    showPage('dashboard');
+                }
             });
         });
 
@@ -2904,6 +3145,18 @@
                 }
             });
         })();
+
+        // ── Profile dropdown ───────────────────────────────────────
+        function toggleProfileMenu() {
+            document.getElementById('profileDropdown').classList.toggle('open');
+        }
+        function closeProfileMenu() {
+            document.getElementById('profileDropdown').classList.remove('open');
+        }
+        document.addEventListener('mousedown', function(e) {
+            var profileWrap = document.getElementById('profileWrap');
+            if (profileWrap && !profileWrap.contains(e.target)) closeProfileMenu();
+        });
 
         // ── User Default Page ──────────────────────────────────────
         var UDP_SYSTEM_PRIORITY = [
@@ -3793,6 +4046,583 @@
                 if (active) stgExitCustomize(); else enterCustomize();
             });
         })();
+
+        /* ═══════════════════════════════════════
+           PAGE SWITCHER
+        ═══════════════════════════════════════ */
+        function showPage(name) {
+            // Close settings overlay if open
+            var settingsView = document.getElementById('settings-view');
+            if (settingsView && settingsView.classList.contains('open')) {
+                settingsView.classList.remove('open');
+            }
+
+            var dashboard = document.getElementById('page-dashboard');
+            var usage = document.getElementById('page-usage');
+            if (name === 'usage') {
+                if (dashboard) { dashboard.classList.add('hidden'); dashboard.style.display = 'none'; }
+                if (usage) { usage.style.display = 'flex'; usage.classList.add('active'); }
+                var usageContent = document.getElementById('usageContent');
+                if (usageContent && usageContent.innerHTML.trim() === '') {
+                    renderUsage();
+                }
+                // Mark usage sidebar item active
+                document.querySelectorAll('.sb-item').forEach(function(i){ i.classList.remove('active'); });
+                var sbUsage = document.getElementById('sb-usage');
+                if (sbUsage) sbUsage.classList.add('active');
+            } else {
+                if (usage) { usage.style.display = 'none'; usage.classList.remove('active'); }
+                if (dashboard) { dashboard.classList.remove('hidden'); dashboard.style.display = 'block'; }
+            }
+        }
+
+        /* ═══════════════════════════════════════
+           USAGE PAGE DATA
+        ═══════════════════════════════════════ */
+        var MODS=[
+          {name:"Lead Management",badge:"LM",bc:"#e6f1fb",bt:"#0c447c",features:[
+            {n:"One View Lead Profile",pt:"Included in Plan",lt:"Flag"},
+            {n:"Lead Manager Intake",pt:"Included in Plan",lt:"Capped",pl:50000,al:10000,con:34210},
+            {n:"Lead Verification",pt:"Included in Plan",lt:"Flag"},
+            {n:"Lead Fields",pt:"Included in Plan",lt:"Capped",pl:200,al:null,con:142},
+            {n:"Custom Tabs",pt:"Included in Plan",lt:"Flag"},
+            {n:"Bulk Offline Upload / Quick Add",pt:"Included in Plan",lt:"Flag"},
+            {n:"Duplicate Blocking",pt:"Included in Plan",lt:"Flag"},
+            {n:"Previous Session Data",pt:"Complementary",lt:"Flag"},
+            {n:"Lead Source Tracking",pt:"Included in Plan",lt:"Flag"},
+            {n:"Website Widget (Web Form)",pt:"Included in Plan",lt:"Capped",pl:10,al:3,con:8},
+            {n:"Opportunity Management",pt:"Included in Plan",lt:"Flag"}
+          ]},
+          {name:"Counsellor Management",badge:"CM",bc:"#e1f5ee",bt:"#085041",features:[
+            {n:"Predictive Analytics (Lead Score, Lead Strength)",pt:"Included in Plan",lt:"Flag"},
+            {n:"Smart Views",pt:"Included in Plan",lt:"Flag"},
+            {n:"Round Robin Lead Distribution",pt:"Included in Plan",lt:"Flag"},
+            {n:"Advanced Lead Distribution (Business Logic)",pt:"Included in Plan",lt:"Flag"},
+            {n:"Tasks & Follow Ups",pt:"Included in Plan",lt:"Flag"},
+            {n:"Conversation Notes",pt:"Included in Plan",lt:"Flag"},
+            {n:"Real time Notifications",pt:"Included in Plan",lt:"Flag"},
+            {n:"Request and Schedule a Call Automation",pt:"Included in Plan",lt:"Flag"},
+            {n:"Sales Reporting",pt:"Included in Plan",lt:"Flag"},
+            {n:"One-on-one Emails",pt:"Included in Plan",lt:"Usage",unit:"per email"},
+            {n:"One-on-One WhatsApp",pt:"Included in Plan",lt:"Flag"},
+            {n:"Logic Based Lead Score",pt:"Included in Plan",lt:"Flag"}
+          ]},
+          {name:"User and Team Management",badge:"UM",bc:"#eeedfe",bt:"#3c3489",features:[
+            {n:"Default Role Based Access",pt:"Included in Plan",lt:"Flag"},
+            {n:"Custom Role Based Access",pt:"Included in Plan",lt:"Flag"},
+            {n:"Teams & Hierarchy Management",pt:"Included in Plan",lt:"Flag"},
+            {n:"Data Masking Module",pt:"Included in Plan",lt:"Flag"},
+            {n:"Publisher Panel",pt:"Included in Plan",lt:"Flag"},
+            {n:"Manage User Fields",pt:"Included in Plan",lt:"Flag"},
+            {n:"Skill Based Allocation",pt:"Included in Plan",lt:"Flag"},
+            {n:"Business Hours / Shift Hours",pt:"Included in Plan",lt:"Flag"},
+            {n:"User License",pt:"Included in Plan",lt:"Capped",pl:30,al:10,con:24},
+            {n:"Agent Module",pt:"Paid Addon",lt:"Flag"},
+            {n:"Check In - Check Out with Allocation Quota",pt:"Paid Addon",lt:"Usage",unit:"per user"},
+            {n:"Single sign-on",pt:"Paid Addon",lt:"Flag"},
+            {n:"Publisher User",pt:"Paid Addon",lt:"Flag"},
+            {n:"Auto Check-In / Auto Check-Out",pt:"Complementary",lt:"Flag"},
+            {n:"Lead Allocation Quota",pt:"Complementary",lt:"Flag"},
+            {n:"Application Allocation Quota",pt:"Complementary",lt:"Flag"},
+            {n:"Opportunity Allocation Quota",pt:"Complementary",lt:"Flag"}
+          ]},
+          {name:"Reports and Analytics",badge:"RA",bc:"#faeeda",bt:"#633806",isAddon:true,features:[
+            {n:"Reports",pt:"Included in Addon",lt:"Capped",pl:10,al:4,con:9},
+            {n:"Trend Analysis",pt:"Included in Addon",lt:"Flag"}
+          ]},
+          {name:"Logs",badge:"LG",bc:"#f1efe8",bt:"#5f5e5a",features:[
+            {n:"Data Flow Logs",pt:"Included in Plan",lt:"Flag"},
+            {n:"Data Porting",pt:"Included in Plan",lt:"Flag"},
+            {n:"Daily Cumulative Count Log",pt:"Included in Plan",lt:"Flag"},
+            {n:"Client API",pt:"Included in Plan",lt:"Flag"}
+          ]},
+          {name:"Mobile CRM",badge:"MC",bc:"#e6f1fb",bt:"#185fa5",features:[
+            {n:"Mobile App Usage",pt:"Included in Plan",lt:"Flag"},
+            {n:"Field Force Tracking",pt:"Included in Plan",lt:"Flag"},
+            {n:"App Telephony",pt:"Paid Addon",lt:"Usage",unit:"per user"},
+            {n:"Field Force Tracking with Auto Check-in",pt:"Paid Addon",lt:"Usage",unit:"per user"}
+          ]},
+          {name:"Developer Portal",badge:"DP",bc:"#e1f5ee",bt:"#0f6e56",features:[
+            {n:"APIs Framework",pt:"Included in Plan",lt:"Flag"},
+            {n:"Single API Rate Limits (per 5 sec)",pt:"Included in Plan",lt:"Capped",pl:20,al:null,con:14},
+            {n:"Bulk API Rate Limits (per 5 sec)",pt:"Paid Addon",lt:"Flag"}
+          ]},
+          {name:"Webhook",badge:"WH",bc:"#faeeda",bt:"#854f0b",isAddon:true,features:[
+            {n:"Webhooks",pt:"Included in Addon",lt:"Flag"}
+          ]},
+          {name:"Extensions",badge:"EX",bc:"#eeedfe",bt:"#534ab7",features:[
+            {n:"Extensions",pt:"Included in Plan",lt:"Flag"},
+            {n:"Calendar Pro",pt:"Included in Plan",lt:"Flag"},
+            {n:"Zoho Creator",pt:"Complementary",lt:"Flag"},
+            {n:"Centre Module",pt:"Complementary",lt:"Flag"},
+            {n:"ToDo",pt:"Complementary",lt:"Flag"},
+            {n:"Echo",pt:"Paid Addon",lt:"Flag"},
+            {n:"Amplify",pt:"Paid Addon",lt:"Usage",unit:"per message"},
+            {n:"Zing",pt:"Paid Addon",lt:"Flag"},
+            {n:"DocVerify",pt:"Paid Addon",lt:"Flag"},
+            {n:"Facebook Offline Conversion",pt:"Paid Addon",lt:"Flag"},
+            {n:"Smart Forms",pt:"Paid Addon",lt:"Flag"}
+          ]},
+          {name:"Telephony Connector",badge:"TC",bc:"#fcebeb",bt:"#791f1f",features:[
+            {n:"Telephony Connector (Click to Call)",pt:"Paid Addon",lt:"Flag"},
+            {n:"Telephony Connector (Campaign Dialer)",pt:"Paid Addon",lt:"Usage",unit:"per user"}
+          ]},
+          {name:"WABA Connector",badge:"WA",bc:"#e1f5ee",bt:"#0f6e56",features:[
+            {n:"WhatsApp Business API",pt:"Paid Addon",lt:"Flag"},
+            {n:"WhatsApp (Marketing)",pt:"Paid Addon",lt:"Usage",unit:"per message"},
+            {n:"WhatsApp (Utility)",pt:"Paid Addon",lt:"Usage",unit:"per message"},
+            {n:"WhatsApp (Service)",pt:"Paid Addon",lt:"Usage",unit:"per message"},
+            {n:"WhatsApp (Authentication)",pt:"Paid Addon",lt:"Usage",unit:"per message"},
+            {n:"WhatsApp Flows",pt:"Included in Addon",lt:"Capped",pl:2,al:1,con:2}
+          ]},
+          {name:"SMS Connector",badge:"SM",bc:"#faeeda",bt:"#633806",features:[
+            {n:"SMS (inclusive of DLT Charges)",pt:"Paid Addon",lt:"Usage",unit:"per SMS"}
+          ]},
+          {name:"Email Connector",badge:"EC",bc:"#e6f1fb",bt:"#0c447c",features:[
+            {n:"Email",pt:"Paid Addon",lt:"Usage",unit:"per email"},
+            {n:"Dedicated IP for Email",pt:"Paid Addon",lt:"Usage",unit:"per IP"}
+          ]},
+          {name:"Marketing Platform",badge:"MP",bc:"#faece7",bt:"#712b13",features:[
+            {n:"Responsive Landing Page Builder",pt:"Included in Plan",lt:"Capped",pl:5,al:2,con:4},
+            {n:"Remarketing Connectors - Google",pt:"Included in Plan",lt:"Flag"},
+            {n:"Remarketing Connectors - Facebook",pt:"Included in Plan",lt:"Flag"},
+            {n:"Conversion Tags Integration",pt:"Included in Plan",lt:"Flag"},
+            {n:"Drag & Drop Email Template Builder",pt:"Included in Plan",lt:"Flag"},
+            {n:"Responsive Email Template Gallery",pt:"Included in Plan",lt:"Flag"},
+            {n:"Responsive Email Campaigns",pt:"Included in Plan",lt:"Flag"},
+            {n:"SMS Campaigns",pt:"Included in Plan",lt:"Flag"},
+            {n:"Recurring Communication",pt:"Included in Plan",lt:"Flag"},
+            {n:"Drip Marketing Automation & Workflow",pt:"Included in Plan",lt:"Capped",pl:20,al:19,con:17},
+            {n:"Communication Performance Reports",pt:"Included in Plan",lt:"Flag"},
+            {n:"Google Lead Ad Connectors",pt:"Paid Addon",lt:"Flag"},
+            {n:"Facebook Lead Ad Connectors",pt:"Paid Addon",lt:"Flag"}
+          ]},
+          {name:"Raw Data",badge:"RD",bc:"#f1efe8",bt:"#5f5e5a",features:[
+            {n:"Raw Data Nurturing Module",pt:"Paid Addon",lt:"Flag"},
+            {n:"List Segmentation",pt:"Included in Addon",lt:"Flag"}
+          ]},
+          {name:"Campaign Management",badge:"CG",bc:"#e1f5ee",bt:"#085041",features:[
+            {n:"Campaign Dashboard",pt:"Included in Plan",lt:"Flag"},
+            {n:"Lead Verification Index",pt:"Included in Plan",lt:"Flag"},
+            {n:"Channel Classification",pt:"Included in Plan",lt:"Flag"},
+            {n:"Inventory Classification",pt:"Included in Plan",lt:"Flag"},
+            {n:"Mutually Exclusive Impact (MEI)",pt:"Included in Plan",lt:"Flag"},
+            {n:"Source Performance Report",pt:"Included in Plan",lt:"Flag"},
+            {n:"Lead Flow Algorithm",pt:"Included in Plan",lt:"Flag"}
+          ]},
+          {name:"Application Automation Platform",badge:"AP",bc:"#eeedfe",bt:"#3c3489",features:[
+            {n:"Application Form Automation",pt:"Included in Plan",lt:"Flag"},
+            {n:"Application Forms Development & Hosting",pt:"Included in Plan",lt:"Capped",pl:5,al:1,con:3},
+            {n:"Student Admission Portal",pt:"Included in Plan",lt:"Flag"},
+            {n:"SAP Whitelabelled URL",pt:"Included in Plan",lt:"Flag"},
+            {n:"Query Management System",pt:"Included in Plan",lt:"Flag"},
+            {n:"Document Manager (Single Download)",pt:"Included in Plan",lt:"Flag"},
+            {n:"Document Manager (Bulk Download)",pt:"Included in Plan",lt:"Flag"},
+            {n:"Email/SMS Notifications (Standard)",pt:"Included in Plan",lt:"Flag"},
+            {n:"Email/SMS Notifications (Custom)",pt:"Included in Plan",lt:"Flag"},
+            {n:"Login via Application Number",pt:"Included in Plan",lt:"Flag"},
+            {n:"Login via OTP",pt:"Included in Plan",lt:"Flag"},
+            {n:"Aadhar Authentication",pt:"Included in Plan",lt:"Flag"},
+            {n:"Offer Letter Placement",pt:"Included in Plan",lt:"Flag"},
+            {n:"School Dashboards",pt:"Complementary",lt:"Flag"},
+            {n:"Test Admin View",pt:"Complementary",lt:"Flag"},
+            {n:"Application Intake",pt:"Paid Addon",lt:"Usage",unit:"per application"},
+            {n:"Referral Connect",pt:"Paid Addon",lt:"Flag"}
+          ]},
+          {name:"Payment Management",badge:"PM",bc:"#e1f5ee",bt:"#0f6e56",features:[
+            {n:"Application / Token Fees Collection",pt:"Included in Plan",lt:"Flag"},
+            {n:"Discount/Voucher Management",pt:"Included in Plan",lt:"Flag"},
+            {n:"Token Fees / Installment Payment",pt:"Included in Plan",lt:"Flag"},
+            {n:"Client Payment Gateway Connector",pt:"Paid Addon",lt:"Flag"}
+          ]},
+          {name:"Mio AI",badge:"MO",bc:"#eeedfe",bt:"#534ab7",features:[
+            {n:"MIO AI Guide",pt:"Paid Addon",lt:"Flag"},
+            {n:"MIO AI Voice",pt:"Paid Addon",lt:"Flag"}
+          ]},
+          {name:"Dynamic Activity",badge:"DY",bc:"#e6f1fb",bt:"#185fa5",features:[
+            {n:"Dynamic Activity",pt:"Included in Plan",lt:"Usage",unit:"per activity"},
+            {n:"Dynamic Fields",pt:"Included in Plan",lt:"Usage",unit:"per field"}
+          ]},
+          {name:"Miscellaneous",badge:"MS",bc:"#f1efe8",bt:"#5f5e5a",features:[
+            {n:"Onsite Training",pt:"Included in Plan",lt:"Capped",pl:2,al:null,con:1},
+            {n:"Virtual Training (Zoom)",pt:"Included in Plan",lt:"Capped",pl:4,al:null,con:2}
+          ]}
+        ];
+
+        /* ═══════════════════════════════════════
+           USAGE HELPERS
+        ═══════════════════════════════════════ */
+        function fmt(n){return n!=null?Number(n).toLocaleString():'0';}
+        function fmtK(n){if(n>=1000){var k=n/1000;return(k===Math.floor(k)?k:k.toFixed(1))+'K';}return String(n);}
+        function capCls(p){return p>=0.9?'crit':p>=0.7?'warn':'ok';}
+
+        function checkSvg(col){
+          return '<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 5l2.5 2.5L8 2.5" stroke="'+col+'" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+        }
+
+        function renderCapRow(f){
+          var an=f.al&&parseInt(f.al)?parseInt(f.al):0;
+          var tot=(f.pl||0)+an, p=tot>0?f.con/tot:0;
+          var pct=Math.round(p*100), cls=capCls(p);
+          var planPct=tot>0?Math.round((f.pl||0)/tot*100):100;
+          var trackStyle=an>0?'background:linear-gradient(to right,var(--border-1) 0%,var(--border-1) '+planPct+'%,#EDE9FE '+planPct+'%,#EDE9FE 100%)':'';
+          var planLine=an>0?'<div class="cap-plan-line" style="left:'+planPct+'%"></div>':'';
+          var barHtml='<div class="cap-bar">'
+            +'<div class="cap-track"'+(trackStyle?' style="'+trackStyle+'"':'')+'>'
+            +'<div class="cap-fill '+cls+'" style="width:'+Math.max(pct,2)+'%"></div>'
+            +'</div>'
+            +planLine
+            +'</div>';
+          var planChip='<span class="cap-plan-chip">'+fmtK(f.pl||0)+' plan</span>';
+          var addonChip=an>0?'<span class="cap-addon-chip">+'+fmtK(an)+' add-on</span>':'';
+          return '<div class="cap-cell">'
+            +'<div class="cap-top">'+barHtml+'<span class="cap-pct '+cls+'">'+pct+'%</span></div>'
+            +'<div class="cap-bottom">'
+            +'<div class="cap-chips">'+planChip+addonChip+'</div>'
+            +'<span class="cap-used-text">'+fmt(f.con)+' used</span>'
+            +'</div>'
+            +'</div>';
+        }
+
+        function renderMod(mod, idx){
+          var isAddon=!!mod.isAddon;
+          var included=mod.features.filter(function(f){return f.pt==='Included in Plan'||f.pt==='Complementary'||f.pt==='Included in Addon';});
+          var paid=mod.features.filter(function(f){return f.pt==='Paid Addon';});
+
+          var capIndicators='';
+          mod.features.filter(function(f){return f.lt==='Capped';}).forEach(function(f){
+            var an=f.al&&parseInt(f.al)?parseInt(f.al):0;
+            var tot=(f.pl||0)+an, p=tot>0?f.con/tot:0;
+            if(p>=0.7){
+              var pct=Math.round(p*100), cls=p>=0.9?'crit':'warn';
+              var short=f.n.length>20?f.n.slice(0,20)+'…':f.n;
+              capIndicators+='<span class="hdr-cap-badge '+cls+'">'+pct+'% '+short+'</span>';
+            }
+          });
+
+          var h='<div class="mod-card'+(isAddon?' is-addon':'')+'" id="mc'+idx+'">';
+          h+='<div class="mod-hdr" onclick="toggleMod('+idx+')">'
+            +'<span class="mod-badge" style="background:'+mod.bc+';color:'+mod.bt+'">'+mod.badge+'</span>'
+            +'<div class="mod-name-wrap">'
+            +'<span class="mod-name">'+mod.name+'</span>'
+            +(isAddon?'<span class="addon-mod-chip">Add-on module</span>':'')
+            +'</div>'
+            +'<div class="mod-hdr-right">';
+          if(capIndicators) h+='<div style="display:flex;align-items:center;gap:4px">'+capIndicators+'</div>';
+          if(paid.length>0) h+='<span class="hdr-addon-pill">'+paid.length+' add-on'+(paid.length>1?'s':'')+'</span>';
+          h+='<span class="mod-feat-count">'+mod.features.length+' features</span>'
+            +'<span class="mod-arr"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3.5 5.5l3.5 3.5 3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>'
+            +'</div></div>';
+
+          h+='<div class="mod-body" id="mb'+idx+'">';
+
+          if(included.length){
+            h+='<div class="sec-block" id="inc'+idx+'">'
+              +'<div class="sec-block-hdr">'
+              +'<span class="sec-eyebrow">Included in your plan</span>'
+              +'<span class="sec-count">'+included.length+'</span>'
+              +'</div>'
+              +'<div class="ft">';
+
+            included.forEach(function(f){
+              var tbCls, tbLbl;
+              if(f.pt==='Included in Plan'){tbCls='tb-plan';tbLbl='Plan';}
+              else if(f.pt==='Complementary'){tbCls='tb-comp';tbLbl='Comp';}
+              else{tbCls='tb-inaddon';tbLbl='Add-on';}
+
+              h+='<div class="ft-row" data-pt="'+f.pt+'" data-name="'+f.n.toLowerCase()+'">';
+              h+='<div class="ft-name-col"><span class="ft-name">'+f.n+'</span></div>';
+              h+='<div class="ft-badge-col"><span class="tb '+tbCls+'">'+tbLbl+'</span></div>';
+              h+='<div class="ft-status-col">';
+
+              if(f.lt==='Capped'){
+                h+=renderCapRow(f);
+              } else if(f.lt==='Flag'){
+                if(f.pt==='Complementary'){
+                  h+='<span class="si si-comp">'+checkSvg('#6B7280')+' Complementary</span>';
+                } else if(f.pt==='Included in Addon'){
+                  h+='<span class="si si-active">'+checkSvg('#534ab7')+' Active</span>';
+                } else {
+                  h+='<span class="si si-enabled">'+checkSvg('#1a9e6e')+' Enabled</span>';
+                }
+              } else if(f.lt==='Usage'){
+                var cls2=f.pt==='Included in Addon'?'addon-usage':'plan-usage';
+                h+='<span class="payg '+cls2+'">Pay as you go · '+(f.unit||'usage')+'</span>';
+              }
+
+              h+='</div></div>';
+            });
+
+            h+='</div></div>';
+          }
+
+          if(paid.length){
+            h+='<div class="sec-block addon-sec-block" id="add'+idx+'">'
+              +'<div class="sec-block-hdr">'
+              +'<span class="sec-eyebrow">Paid Add-ons</span>'
+              +'<span class="sec-count">'+paid.length+'</span>'
+              +'</div>'
+              +'<div class="ft">';
+
+            paid.forEach(function(f){
+              h+='<div class="ft-row" data-pt="'+f.pt+'" data-name="'+f.n.toLowerCase()+'">';
+              h+='<div class="ft-name-col"><span class="ft-name">'+f.n+'</span></div>';
+              h+='<div class="ft-badge-col"><span class="tb tb-paid">Add-on</span></div>';
+              h+='<div class="ft-status-col">';
+              if(f.lt==='Usage'){
+                h+='<span class="payg paid-usage">Pay as you go · '+(f.unit||'usage')+'</span>';
+              } else if(f.lt==='Capped'){
+                h+=renderCapRow(f);
+              } else {
+                h+='<span class="si si-paid">'+checkSvg('#854f0b')+' Active</span>';
+              }
+              h+='</div></div>';
+            });
+
+            h+='</div></div>';
+          }
+
+          h+='</div></div>';
+          return h;
+        }
+
+        function renderUsage(){
+          var totalF=0, planF=0, compF=0, paidF=0;
+          var cappedWarn=[], cappedCrit=[];
+
+          MODS.forEach(function(m){
+            m.features.forEach(function(f){
+              totalF++;
+              if(f.pt==='Included in Plan'||f.pt==='Included in Addon') planF++;
+              else if(f.pt==='Complementary') compF++;
+              else if(f.pt==='Paid Addon') paidF++;
+              if(f.lt==='Capped'){
+                var an=f.al&&parseInt(f.al)?parseInt(f.al):0;
+                var tot=(f.pl||0)+an, p=tot>0?f.con/tot:0;
+                if(p>=0.9) cappedCrit.push({n:f.n,pct:Math.round(p*100)});
+                else if(p>=0.7) cappedWarn.push({n:f.n,pct:Math.round(p*100)});
+              }
+            });
+          });
+
+          var subStart=new Date('2026-04-01'), subEnd=new Date('2027-03-31');
+          var today=new Date(); today.setHours(0,0,0,0);
+          var totalDays=Math.ceil((subEnd-subStart)/864e5);
+          var elapsed=Math.max(0,Math.ceil((today-subStart)/864e5));
+          var daysLeft=Math.max(0,Math.ceil((subEnd-today)/864e5));
+          var elapsedPct=Math.round(Math.min(elapsed/totalDays,1)*100);
+          var alertCount=cappedCrit.length+cappedWarn.length;
+
+          var h='';
+          h+='<div class="usage-page-header">'
+            +'<div><div class="usage-heading">Subscription &amp; Usage</div>'
+            +'<div class="usage-heading-sub">Meritto Edu Tech Ltd. · Enrollment Cloud</div></div>'
+            +'</div>';
+
+          h+='<div class="summary-grid">';
+          h+='<div class="s-card featured">'
+            +'<div class="s-card-eyebrow">Package</div>'
+            +'<div class="s-card-val">Enrollment Cloud</div>'
+            +'<div class="s-card-sub">Meritto CRM Platform</div>'
+            +'<div><span class="plan-pill">Growth Plan</span></div>'
+            +'</div>';
+
+          h+='<div class="s-card">'
+            +'<div class="s-card-eyebrow">Subscription Period</div>'
+            +'<div class="s-card-val">'+daysLeft+'</div>'
+            +'<div class="s-card-sub">days remaining</div>'
+            +'<div class="sub-bar"><div class="sub-bar-fill" style="width:'+elapsedPct+'%"></div></div>'
+            +'<div class="s-card-sub">Apr 1, 2026 – Mar 31, 2027</div>'
+            +'</div>';
+
+          h+='<div class="s-card">'
+            +'<div class="s-card-eyebrow">Features Enabled</div>'
+            +'<div class="s-card-val">'+totalF+'</div>'
+            +'<div class="s-card-sub">Across '+MODS.length+' modules</div>'
+            +'<div class="s-card-breakdown">'
+            +'<span class="s-dot-item"><span class="s-dot" style="background:#1a9e6e"></span>'+planF+' in plan</span>'
+            +'<span class="s-dot-item"><span class="s-dot" style="background:#9CA3AF"></span>'+compF+' comp</span>'
+            +'<span class="s-dot-item"><span class="s-dot" style="background:#e8900a"></span>'+paidF+' add-ons</span>'
+            +'</div>'
+            +'</div>';
+
+          var alertCardContent;
+          if(alertCount===0){
+            alertCardContent='<div class="all-ok">'+checkSvg('#1a9e6e')+' All within limits</div>';
+          } else {
+            alertCardContent='<div class="alert-lines">';
+            cappedCrit.slice(0,2).forEach(function(c){
+              alertCardContent+='<div class="alert-line"><span class="alert-dot" style="background:#DC2626"></span>'
+                +'<span>'+c.n.slice(0,26)+(c.n.length>26?'…':'')+'</span>'
+                +'<strong style="color:#DC2626;margin-left:auto">'+c.pct+'%</strong></div>';
+            });
+            cappedWarn.slice(0,2).forEach(function(c){
+              alertCardContent+='<div class="alert-line"><span class="alert-dot" style="background:#e8900a"></span>'
+                +'<span>'+c.n.slice(0,26)+(c.n.length>26?'…':'')+'</span>'
+                +'<strong style="color:#e8900a;margin-left:auto">'+c.pct+'%</strong></div>';
+            });
+            alertCardContent+='</div>';
+          }
+          h+='<div class="s-card" style="'+(alertCount>0?'border-color:#FDE68A;':'')+'">'
+            +'<div class="s-card-eyebrow">Capacity Alerts</div>'
+            +'<div class="s-card-val" style="color:'+(alertCount===0?'#1a9e6e':cappedCrit.length>0?'#DC2626':'#e8900a')+'">'+alertCount+'</div>'
+            +'<div class="s-card-sub">'+(alertCount===0?'No features near limit':cappedCrit.length+' critical · '+cappedWarn.length+' warning')+'</div>'
+            +alertCardContent
+            +'</div>';
+
+          h+='</div>';
+
+          h+='<div class="ctrl-bar">'
+            +'<div class="ctrl-left">'
+            +'<span class="sec-title">Feature Breakdown</span>'
+            +'<span class="count-pill" id="countPill">'+totalF+' features · '+MODS.length+' modules</span>'
+            +'</div>'
+            +'<div class="ctrl-right">'
+            +'<div class="search-wrap">'
+            +'<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="5.5" cy="5.5" r="4" stroke="#9CA3AF" stroke-width="1.3"/><path d="M9 9l3 3" stroke="#9CA3AF" stroke-width="1.3" stroke-linecap="round"/></svg>'
+            +'<input type="text" id="searchInput" placeholder="Search features or modules…" oninput="applyFilters()">'
+            +'</div>'
+            +'<div class="filter-wrap">'
+            +'<div class="filter-btn" id="filterBtn" onclick="toggleFilterMenu()">'
+            +'<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 3h10M3 6h6M5 9h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>'
+            +'<span id="filterLabel">All types</span>'
+            +'<div class="f-caret"></div>'
+            +'</div>'
+            +'<div class="filter-menu" id="filterMenu">'
+            +'<div class="fopt sel" id="fopt-all" onclick="setFilter(\'all\')"><div class="fcheck">'+checkSvg('#fff')+'</div>All features</div>'
+            +'<div class="fopt" id="fopt-plan" onclick="setFilter(\'plan\')"><div class="fcheck"></div><span class="fdot" style="background:#1a9e6e"></span>Included in plan</div>'
+            +'<div class="fopt" id="fopt-comp" onclick="setFilter(\'comp\')"><div class="fcheck"></div><span class="fdot" style="background:#9CA3AF"></span>Complementary</div>'
+            +'<div class="fopt" id="fopt-addon" onclick="setFilter(\'addon\')"><div class="fcheck"></div><span class="fdot" style="background:#e8900a"></span>Paid add-on</div>'
+            +'</div>'
+            +'</div>'
+            +'<div class="tgl-group">'
+            +'<button class="tgl-btn" id="btn-expand" onclick="expandAll()">'
+            +'<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 4L5.5 7.5 9.5 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            +'Expand all</button>'
+            +'<button class="tgl-btn" id="btn-collapse" onclick="collapseAll()">'
+            +'<svg width="11" height="11" viewBox="0 0 11 11" fill="none"><path d="M1.5 7L5.5 3.5 9.5 7" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+            +'Collapse all</button>'
+            +'</div>'
+            +'</div></div>';
+
+          h+='<div class="mod-list" id="modList">';
+          MODS.forEach(function(m,i){h+=renderMod(m,i);});
+          h+='</div><div style="height:32px"></div>';
+
+          document.getElementById('usageContent').innerHTML=h;
+          var c0=document.getElementById('mc0');
+          if(c0) c0.classList.add('open');
+        }
+
+        var activeFilter='all';
+        var PT_MAP={plan:'Included in Plan', addon:'Paid Addon', comp:'Complementary'};
+
+        function toggleFilterMenu(){
+          var fm=document.getElementById('filterMenu');
+          if(fm) fm.classList.toggle('open');
+        }
+
+        function setFilter(type){
+          activeFilter=type;
+          ['all','plan','addon','comp'].forEach(function(t){
+            var el=document.getElementById('fopt-'+t); if(!el) return;
+            el.classList.toggle('sel',t===type);
+            var chk=el.querySelector('.fcheck');
+            if(chk) chk.innerHTML=t===type?checkSvg('#fff'):'';
+          });
+          var labels={all:'All types',plan:'Included in plan',addon:'Paid add-on',comp:'Complementary'};
+          var lbl=document.getElementById('filterLabel'); if(lbl) lbl.textContent=labels[type]||'All types';
+          var btn=document.getElementById('filterBtn'); if(btn) btn.classList.toggle('filtered',type!=='all');
+          var fm=document.getElementById('filterMenu'); if(fm) fm.classList.remove('open');
+          applyFilters();
+        }
+
+        function applyFilters(){
+          var q=(document.getElementById('searchInput').value||'').toLowerCase().trim();
+          var targetPt=activeFilter!=='all'?PT_MAP[activeFilter]:null;
+          var totalVf=0, totalVm=0;
+
+          MODS.forEach(function(mod,idx){
+            var card=document.getElementById('mc'+idx); if(!card) return;
+            var modNameMatch=!q||mod.name.toLowerCase().indexOf(q)>-1;
+            var rows=card.querySelectorAll('.ft-row[data-pt]');
+            var visCount=0;
+
+            rows.forEach(function(row){
+              var pt=row.getAttribute('data-pt');
+              var name=row.getAttribute('data-name')||'';
+              var typeOk=!targetPt||pt===targetPt;
+              var searchOk=!q||modNameMatch||name.indexOf(q)>-1;
+              var show=typeOk&&searchOk;
+              row.style.display=show?'':'none';
+              if(show) visCount++;
+            });
+
+            ['inc','add'].forEach(function(prefix){
+              var block=document.getElementById(prefix+idx); if(!block) return;
+              var blockRows=block.querySelectorAll('.ft-row[data-pt]');
+              var anyVis=Array.from(blockRows).some(function(r){return r.style.display!=='none';});
+              block.style.display=anyVis?'':'none';
+            });
+
+            var showMod=visCount>0;
+            card.style.display=showMod?'':'none';
+
+            if(showMod&&(targetPt||q)) card.classList.add('open');
+            if(!targetPt&&!q){
+              card.classList.toggle('open',idx===0);
+              card.querySelectorAll('.sec-block').forEach(function(b){b.style.display='';});
+            }
+            if(showMod){totalVm++;totalVf+=visCount;}
+          });
+
+          var cp=document.getElementById('countPill');
+          if(cp) cp.textContent=totalVf+' features · '+totalVm+' modules';
+        }
+
+        function toggleMod(idx){
+          var c=document.getElementById('mc'+idx);
+          if(!c) return;
+          c.classList.toggle('open');
+          var be=document.getElementById('btn-expand');
+          var bc=document.getElementById('btn-collapse');
+          if(be) be.classList.remove('active');
+          if(bc) bc.classList.remove('active');
+        }
+
+        function expandAll(){
+          var btn=document.getElementById('btn-expand');
+          if(!btn) return;
+          if(btn.classList.contains('active')){
+            MODS.forEach(function(_,i){var c=document.getElementById('mc'+i);if(c)c.classList.toggle('open',i===0);});
+            btn.classList.remove('active');
+          } else {
+            MODS.forEach(function(_,i){var c=document.getElementById('mc'+i);if(c&&c.style.display!=='none')c.classList.add('open');});
+            btn.classList.add('active');
+            var bc=document.getElementById('btn-collapse'); if(bc) bc.classList.remove('active');
+          }
+        }
+
+        function collapseAll(){
+          var btn=document.getElementById('btn-collapse');
+          if(!btn) return;
+          if(btn.classList.contains('active')){
+            MODS.forEach(function(_,i){var c=document.getElementById('mc'+i);if(c)c.classList.toggle('open',i===0);});
+            btn.classList.remove('active');
+          } else {
+            MODS.forEach(function(_,i){var c=document.getElementById('mc'+i);if(c)c.classList.remove('open');});
+            btn.classList.add('active');
+            var be=document.getElementById('btn-expand'); if(be) be.classList.remove('active');
+          }
+        }
+
+        // Close usage filter menu when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.filter-wrap')) {
+                var fm = document.getElementById('filterMenu');
+                if (fm) fm.classList.remove('open');
+            }
+        });
     </script>
 </body>
 </html>
