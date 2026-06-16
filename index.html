@@ -220,7 +220,7 @@
             align-items: center;
             position: sticky;
             top: 0;
-            z-index: 3000;
+            z-index: 10001;
             flex-shrink: 0;
         }
 
@@ -344,6 +344,10 @@
             border-radius: 4px;
             transition: background 0.2s;
             position: relative;
+            color: #374151;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .tn-icon-btn:hover {
@@ -2417,6 +2421,7 @@
             <div class="institute-selector"><span>🏛</span><span>ABES Engineering College</span><span>▼</span></div>
             <div class="tn-right">
                 <button class="ask-mio-btn">✦ Ask Mio AI</button>
+                <button class="tn-icon-btn" onclick="openMetsOverlay()" title="Subscription & Usage"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/><path d="M6 15h2"/><path d="M10 15h4"/></svg></button>
                 <button class="tn-icon-btn" id="settingsBtn">⚙️</button>
                 <button class="tn-icon-btn">❓</button>
                 <button class="tn-icon-btn has-notification">🔔</button>
@@ -2470,7 +2475,6 @@
                 <a class="sb-item" href="#"><span class="sb-item-icon">📊</span><span class="sb-item-label">Reports and Analytics</span><span class="sb-tooltip">Reports and Analytics</span></a>
                 <a class="sb-item" href="#"><span class="sb-item-icon">📈</span><span class="sb-item-label">Communication Performance</span><span class="sb-tooltip">Communication Performance</span></a>
                 <a class="sb-item" href="#"><span class="sb-item-icon">🏷️</span><span class="sb-item-label">Manage Scorecard</span><span class="sb-tooltip">Manage Scorecard</span></a>
-                <a class="sb-item" id="sb-usage" href="#" onclick="showPage('usage');event.preventDefault();"><span class="sb-item-icon"><svg width="18" height="18" viewBox="0 0 16 16" fill="none" style="vertical-align:middle"><path d="M1.5 12V6L8 2.5 14.5 6V12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><rect x="6" y="8.5" width="4" height="3.5" rx=".5" stroke="currentColor" stroke-width="1.2"/></svg></span><span class="sb-item-label">Subscription &amp; Usage</span><span class="sb-tooltip">Subscription &amp; Usage</span></a>
             </div>
         </aside>
 
@@ -3050,6 +3054,11 @@
         const stgDetailWrap = document.getElementById('stgDetailWrap');
 
         settingsBtn.addEventListener('click', () => {
+            // Close METS overlay if open so settings appears on top
+            var metsOverlay = document.getElementById('mets-overlay');
+            if (metsOverlay && metsOverlay.style.display !== 'none') {
+                if (window.closeMetsOverlay) closeMetsOverlay();
+            }
             settingsView.classList.add('open');
             // Sync sidebar collapse state if needed
             if (sidebar.classList.contains('collapsed')) {
@@ -4328,6 +4337,11 @@
             if (settingsView && settingsView.classList.contains('open')) {
                 settingsView.classList.remove('open');
             }
+            // Close METS overlay if open
+            var metsOverlay = document.getElementById('mets-overlay');
+            if (metsOverlay && metsOverlay.style.display !== 'none') {
+                if (window.closeMetsOverlay) closeMetsOverlay();
+            }
 
             var dashboard = document.getElementById('page-dashboard');
             var usage = document.getElementById('page-usage');
@@ -4896,5 +4910,525 @@
             }
         });
     </script>
+
+<!-- METS Overlay -->
+<style>
+/* ── METS scoped styles (prefix: mets-) ── */
+.mets-wrap { width:100%; box-sizing:border-box; padding:16px 20px 32px; font-family:'Inter',sans-serif; }
+
+/* Page title */
+.mets-page-hdr { display:flex;align-items:center;gap:10px;margin-bottom:14px; }
+.mets-page-icon { width:26px;height:26px;background:#2563EB;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0; }
+.mets-page-title { font-size:17px;font-weight:700;color:#1c2534; }
+
+/* Top stats grid */
+.mets-stats-grid { display:grid;grid-template-columns:40% 1fr 1fr;gap:12px;margin-bottom:12px; }
+
+/* Cards */
+.mets-card { background:#fff;border:1px solid #e5e9f2;border-radius:8px;padding:16px; }
+
+/* Main stats card */
+.mets-main-label { display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#f59e0b;margin-bottom:10px; }
+.mets-main-big { font-size:44px;font-weight:700;color:#1c2534;letter-spacing:-1.5px;line-height:1; }
+.mets-main-actions { display:flex;gap:8px;margin-bottom:12px; }
+.mets-btn-alloc { background:#2563EB;color:#fff;border:none;border-radius:6px;padding:9px 22px;font-size:14px;font-weight:600;cursor:pointer; }
+.mets-btn-gear { background:#fff;border:1px solid #e5e9f2;border-radius:6px;width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280; }
+.mets-divider { border:none;border-top:1px solid #e5e9f2;margin:20px 0 16px; }
+.mets-sub-stats { display:grid;grid-template-columns:repeat(3,1fr);gap:6px; }
+.mets-sub-stat { }
+.mets-sub-label { font-size:12px;color:#8b96b0;margin-bottom:6px;display:flex;align-items:center;gap:4px; }
+.mets-sub-val { font-size:20px;font-weight:700;color:#1c2534; }
+
+/* Feature / Category cards */
+.mets-card-hdr { display:flex;align-items:center;justify-content:space-between;margin-bottom:10px; }
+.mets-card-title { font-size:12.5px;font-weight:600;color:#1c2534; }
+.mets-date-range { font-size:11px;color:#8b96b0;display:flex;align-items:center;gap:4px; }
+.mets-feat-row { display:flex;align-items:center;gap:8px;margin-bottom:8px; }
+.mets-feat-icon { width:22px;height:22px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0; }
+.mets-feat-name { font-size:12px;color:#374151;flex:1; }
+.mets-feat-bar-wrap { width:80px;background:#f3f4f6;border-radius:4px;height:4px;overflow:hidden;flex-shrink:0; }
+.mets-feat-bar { height:100%;background:#2563EB;border-radius:4px; }
+.mets-feat-val { font-size:11.5px;color:#6b7280;width:40px;text-align:right;flex-shrink:0; }
+
+.mets-cat-row { display:flex;align-items:center;gap:8px;margin-bottom:7px; }
+.mets-cat-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+.mets-cat-name { font-size:12px;color:#374151;flex:1; }
+.mets-cat-val { font-size:12px;font-weight:600;color:#1c2534; }
+.mets-no-data { text-align:center;padding:10px 0;font-size:12px;color:#8b96b0; }
+.mets-cat-total { border-top:1px solid #e5e9f2;padding-top:8px;margin-top:4px;display:flex;justify-content:space-between;font-size:12px; }
+.mets-cat-total-label { color:#6b7280; }
+.mets-cat-total-val { font-weight:700;color:#1c2534; }
+
+/* View More Stats */
+.mets-vms-row { position:relative;display:flex;align-items:center;justify-content:flex-end;gap:10px;margin-bottom:12px; }
+.mets-vms-row::before { content:'';position:absolute;left:0;right:0;top:50%;height:1px;background:#dde2ef;z-index:0; }
+.mets-vms-label { position:relative;z-index:1;font-size:13px;font-weight:500;color:#2563EB;background:#f4f6fa;padding:0 6px;white-space:nowrap;cursor:pointer; }
+.mets-vms-arrow { position:relative;z-index:1;width:30px;height:30px;border-radius:50%;background:#2563EB;color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;flex-shrink:0; }
+
+/* Tabs */
+.mets-tabs-card { background:#fff;border:1px solid #e5e9f2;border-radius:8px;overflow:hidden; }
+.mets-tabs-row { display:flex;border-bottom:1px solid #e5e9f2;padding:0; }
+.mets-tab { padding:10px 15px;font-size:12.5px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap; }
+.mets-tab.active { color:#2563EB;border-bottom-color:#2563EB;font-weight:600; }
+.mets-tab:hover:not(.active) { color:#374151;background:#f8fafc; }
+.mets-tab-content { padding:0; }
+
+/* Table */
+.mets-tbl-wrap { overflow-x:auto;background:#fff;border-radius:0 0 8px 8px; }
+.mets-tbl { width:100%;border-collapse:collapse;font-size:13px; }
+.mets-tbl th { background:#eef1f8;padding:12px 18px;text-align:left;font-size:12px;font-weight:500;color:#6b7280;border-bottom:1px solid #dde3f0;white-space:nowrap; }
+.mets-tbl td { padding:12px 18px;color:#374151;vertical-align:middle;background:#fff;border-bottom:1px solid #f0f3fa; }
+.mets-tbl tr:last-child td { border-bottom:none; }
+.mets-section-hdr td { font-weight:600;font-size:13px;color:#1c2534;padding:16px 18px 10px;border-bottom:1px solid #f0f3fa;background:#fff; }
+/* Feature cell */
+.mets-feat-cell { display:flex;align-items:center;gap:8px;font-weight:600;color:#1c2534;white-space:nowrap; }
+.mets-feat-icon-sm { width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center; }
+/* Plan type radio */
+.mets-plan-cell { display:flex;align-items:center;gap:8px;font-size:12.5px;color:#374151; }
+.mets-radio { width:15px;height:15px;border-radius:50%;border:2px solid #c5ccd9;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;background:#fff; }
+.mets-radio.active { border-color:#2563EB; }
+.mets-radio.active::after { content:'';width:7px;height:7px;border-radius:50%;background:#2563EB;display:block; }
+/* Value pill */
+.mets-pill { display:inline-flex;align-items:center;justify-content:center;background:#e8ecf6;border-radius:6px;padding:5px 12px;font-size:12.5px;color:#374151;min-width:76px;white-space:nowrap; }
+.mets-pill .mets-decimal { color:#9ca3af;font-weight:400; }
+/* Rowspan cells (Complimentary, WhatsApp Allocated) */
+.mets-span-cell { background:#dfe6f5 !important;text-align:center;vertical-align:middle;font-size:13px;font-weight:500;color:#374151; }
+.mets-span-pill { display:inline-flex;align-items:center;justify-content:center;background:#dfe6f5;border-radius:6px;min-width:76px;padding:5px 12px;font-size:12.5px;color:#374151;border-radius:6px; }
+.mets-xxxx { color:#b8c1d4;font-size:12.5px; }
+/* Transit column */
+.mets-transit-pill { display:inline-flex;align-items:center;justify-content:center;background:#fef3c7;border-radius:6px;padding:5px 12px;font-size:12.5px;color:#d97706;min-width:76px;white-space:nowrap; }
+.mets-transit-pill .mets-decimal { color:#f3be82;font-weight:400; }
+.mets-na-cell { color:#d1d5db;text-align:center;font-size:13px;vertical-align:middle; }
+/* Transit METS tab panel */
+.mets-transit-banner { background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin:16px 16px 0;font-size:12.5px;color:#92400e;line-height:1.6; }
+.mets-transit-banner strong { color:#78350f; }
+.mets-transit-tbl { width:100%;border-collapse:collapse;font-size:12.5px; }
+.mets-transit-tbl th { background:#eef1f8;padding:10px 14px;font-size:12px;font-weight:500;color:#6b7280;border-bottom:1px solid #dde3f0;white-space:nowrap; }
+.mets-transit-tbl td { padding:10px 14px;border-bottom:1px solid #f0f3fa;color:#374151;vertical-align:middle; }
+.mets-status-badge { display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:500;white-space:nowrap; }
+.mets-status-active { background:#fef3c7;color:#b45309; }
+.mets-status-settled { background:#d1fae5;color:#065f46; }
+.mets-status-released { background:#dbeafe;color:#1d4ed8; }
+.mets-status-autoded { background:#fee2e2;color:#991b1b; }
+.mets-status-overconsumed { background:#fff1f2;color:#be123c; }
+.mets-info-icon { display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1px solid #9ca3af;font-size:9px;color:#6b7280;cursor:default;margin-left:4px;vertical-align:middle;flex-shrink:0; }
+/* Country selector */
+.mets-country { display:inline-flex;align-items:center;gap:4px;font-size:11.5px;color:#374151;cursor:pointer;margin-top:3px;border-bottom:1px solid #9ca3af;padding-bottom:1px; }
+</style>
+
+<div id="mets-overlay" style="display:none;position:fixed;right:0;bottom:0;top:52px;z-index:9000;background:#f4f6fa;overflow-y:auto;overflow-x:hidden;">
+    <div class="mets-wrap">
+
+        <!-- Page Header -->
+        <div class="mets-page-hdr">
+            <span class="mets-page-title">Meritto Engagement and Transaction System <span style="color:#9ca3af;font-weight:500;">(METS)</span></span>
+        </div>
+
+        <!-- Top Stats Row -->
+        <div class="mets-stats-grid">
+
+            <!-- Card 1: Total Available METS (Enhanced) -->
+            <div class="mets-card" style="border-left:3px solid #2563EB;">
+
+                <!-- Row 1: label (left) + buttons (top-right) -->
+                <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:10px;">
+                    <div class="mets-main-label" style="margin-bottom:0;">
+                        <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#f59e0b"/></svg>
+                        Total Available METS
+                        <span class="mets-info-icon">i</span>
+                    </div>
+                    <div style="display:flex;gap:5px;align-items:center;flex-shrink:0;">
+                        <button style="display:flex;align-items:center;gap:5px;background:linear-gradient(135deg,#2563EB,#4f46e5);color:#fff;border:none;border-radius:6px;padding:6px 13px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;box-shadow:0 2px 8px rgba(37,99,235,0.4),0 0 0 2px rgba(37,99,235,0.15);">
+                            <svg width="11" height="11" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="#fff" stroke-width="1.5"/><path d="M7 4v6M4 7h6" stroke="#fff" stroke-width="1.5" stroke-linecap="round"/></svg>
+                            Allocate Quota
+                        </button>
+                        <button style="background:#fff;border:1.5px solid #dde3f0;border-radius:6px;width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.07);">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Row 2: big number -->
+                <div class="mets-main-big" style="margin-bottom:12px;">3,074<span style="color:#9ca3af;font-weight:400;">.000</span></div>
+
+                <hr class="mets-divider" style="margin:0 0 12px;">
+
+                <!-- Row 5: sub-stats in 2×2 grid -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px 8px;">
+
+                    <div>
+                        <div class="mets-sub-label" style="color:#2563EB;">
+                            <svg width="8" height="8" viewBox="0 0 10 10" style="flex-shrink:0;"><rect x="1" y="1" width="8" height="8" rx="1.5" stroke="#2563EB" stroke-width="1.3" fill="none"/></svg>
+                            Committed METS <span class="mets-info-icon" style="border-color:#93c5fd;color:#2563EB;">i</span>
+                        </div>
+                        <div class="mets-sub-val">1,000<span style="color:#9ca3af;font-weight:400;">.000</span></div>
+                    </div>
+
+                    <div style="border-left:1px solid #e5e9f2;padding-left:12px;">
+                        <div class="mets-sub-label" style="color:#0d9488;">
+                            <svg width="7" height="7" viewBox="0 0 8 8" style="flex-shrink:0;"><circle cx="4" cy="4" r="3.5" fill="#0d9488"/></svg>
+                            Allocated METS <span class="mets-info-icon" style="border-color:#5eead4;color:#0d9488;">i</span>
+                        </div>
+                        <div class="mets-sub-val">60<span style="color:#9ca3af;font-weight:400;">.000</span></div>
+                    </div>
+
+                    <div style="border-top:1px solid #e5e9f2;padding-top:10px;">
+                        <div class="mets-sub-label" style="color:#d97706;">
+                            <svg width="9" height="9" viewBox="0 0 12 12" fill="none" style="flex-shrink:0;"><circle cx="6" cy="6" r="5" stroke="#d97706" stroke-width="1.2"/><path d="M6 3.5v2.8l1.8 1.2" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                            Transit METS <span class="mets-info-icon" style="border-color:#fcd34d;color:#d97706;">i</span>
+                        </div>
+                        <div class="mets-sub-val" style="color:#d97706;">12<span style="color:#f3be82;font-weight:400;">.000</span></div>
+                    </div>
+
+                    <div style="border-top:1px solid #e5e9f2;padding-top:10px;border-left:1px solid #e5e9f2;padding-left:12px;">
+                        <div class="mets-sub-label" style="color:#16a34a;">
+                            <svg width="7" height="7" viewBox="0 0 8 8" style="flex-shrink:0;"><circle cx="4" cy="4" r="3.5" fill="#16a34a"/></svg>
+                            Unallocated METS <span class="mets-info-icon" style="border-color:#86efac;color:#16a34a;">i</span>
+                        </div>
+                        <div class="mets-sub-val">2,002<span style="color:#9ca3af;font-weight:400;">.000</span></div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Card 2: Top Features -->
+            <div class="mets-card">
+                <div class="mets-card-hdr">
+                    <span class="mets-card-title">Top Features</span>
+                    <span class="mets-date-range">
+                        05 Jun 2026 – 11 Jun 2026
+                        <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="9" rx="1.5" stroke="#8b96b0" stroke-width="1.2"/><path d="M4 1v2M8 1v2M1 5h10" stroke="#8b96b0" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    </span>
+                </div>
+                <div style="text-align:right;font-size:10.5px;color:#8b96b0;margin-bottom:6px;">METS Consumed</div>
+                <div class="mets-feat-row" style="background:#fff1f0;border-radius:4px;padding:4px 6px;margin-bottom:4px;">
+                    <div class="mets-feat-icon" style="background:transparent;">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="13" rx="2" stroke="#ef4444" stroke-width="1.5"/><path d="M2 8l8 5 8-5" stroke="#ef4444" stroke-width="1.5"/></svg>
+                    </div>
+                    <span class="mets-feat-name">Email</span>
+                    <span class="mets-feat-val">0<span style="color:#9ca3af">.000</span></span>
+                </div>
+                <div class="mets-feat-row" style="background:#fff8f8;border-radius:4px;padding:4px 6px;margin-bottom:4px;">
+                    <div class="mets-feat-icon" style="background:transparent;">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M3 5h14a1 1 0 011 1v8a1 1 0 01-1 1H3a1 1 0 01-1-1V6a1 1 0 011-1z" stroke="#ef4444" stroke-width="1.5"/><path d="M7 9h6M7 12h4" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    </div>
+                    <span class="mets-feat-name">SMS</span>
+                    <span class="mets-feat-val">0<span style="color:#9ca3af">.000</span></span>
+                </div>
+                <div class="mets-feat-row" style="background:#f0fdf4;border-radius:4px;padding:4px 6px;margin-bottom:4px;">
+                    <div class="mets-feat-icon" style="background:transparent;">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M17 11.5A7 7 0 1 1 5.07 6.07L3 3m14 8.5v4.5l-3-2H6a2 2 0 0 1-2-2v-1" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <span class="mets-feat-name">Whatsapp</span>
+                    <span class="mets-feat-val">0<span style="color:#9ca3af">.000</span></span>
+                </div>
+                <div class="mets-feat-row" style="background:#f0fdf4;border-radius:4px;padding:4px 6px;margin-bottom:4px;">
+                    <div class="mets-feat-icon" style="background:transparent;">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M17 11.5A7 7 0 1 1 5.07 6.07L3 3m14 8.5v4.5l-3-2H6a2 2 0 0 1-2-2v-1" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </div>
+                    <span class="mets-feat-name">Whatsapp Flow</span>
+                    <span class="mets-feat-val">0<span style="color:#9ca3af">.000</span></span>
+                </div>
+                <div class="mets-feat-row" style="background:#fff;border-radius:4px;padding:4px 6px;">
+                    <div class="mets-feat-icon" style="background:transparent;">
+                        <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="14" rx="2" stroke="#2563eb" stroke-width="1.5"/><rect x="6" y="6" width="8" height="8" rx="1" stroke="#2563eb" stroke-width="1.2"/></svg>
+                    </div>
+                    <span class="mets-feat-name">Widget</span>
+                    <span class="mets-feat-val">0<span style="color:#9ca3af">.000</span></span>
+                </div>
+            </div>
+
+            <!-- Card 3: Top Category -->
+            <div class="mets-card" style="display:flex;flex-direction:column;">
+                <div class="mets-card-hdr">
+                    <span class="mets-card-title">Top Category</span>
+                    <span class="mets-date-range">
+                        05 Jun 2026 – 11 Jun 2026
+                        <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="9" rx="1.5" stroke="#8b96b0" stroke-width="1.2"/><path d="M4 1v2M8 1v2M1 5h10" stroke="#8b96b0" stroke-width="1.2" stroke-linecap="round"/></svg>
+                    </span>
+                </div>
+                <div class="mets-cat-row"><span class="mets-cat-dot" style="background:#3b82f6"></span><span class="mets-cat-name">Communication</span><span class="mets-cat-val">0<span style="color:#9ca3af;font-weight:400;">.000</span></span></div>
+                <div class="mets-cat-row"><span class="mets-cat-dot" style="background:#22c55e"></span><span class="mets-cat-name">Chatbot</span><span class="mets-cat-val">0<span style="color:#9ca3af;font-weight:400;">.000</span></span></div>
+                <div class="mets-cat-row"><span class="mets-cat-dot" style="background:#f59e0b"></span><span class="mets-cat-name">Limits</span><span class="mets-cat-val">0<span style="color:#9ca3af;font-weight:400;">.000</span></span></div>
+                <div class="mets-cat-row"><span class="mets-cat-dot" style="background:#ef4444"></span><span class="mets-cat-name">User License</span><span class="mets-cat-val">0<span style="color:#9ca3af;font-weight:400;">.000</span></span></div>
+                <div class="mets-cat-row"><span class="mets-cat-dot" style="background:#7c3aed"></span><span class="mets-cat-name">Mio AI</span><span class="mets-cat-val">0<span style="color:#9ca3af;font-weight:400;">.000</span></span></div>
+                <div class="mets-no-data">No data to display.</div>
+                <div style="flex:1;"></div>
+                <div class="mets-cat-total"><span class="mets-cat-total-label">Total</span><span class="mets-cat-total-val">0 METS</span></div>
+            </div>
+        </div>
+
+        <!-- View More Stats -->
+        <div class="mets-vms-row">
+            <span class="mets-vms-label">View More Stats</span>
+            <button class="mets-vms-arrow">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 5l4 4 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+        </div>
+
+        <!-- Tabs + Table -->
+        <div class="mets-tabs-card">
+            <div class="mets-tabs-row">
+                <div class="mets-tab active" onclick="metsSwitchTab(this,'mets-panel-alloc')">Allocation Details</div>
+                <div class="mets-tab" onclick="metsSwitchTab(this,'mets-panel-addon')">Add-On Limits</div>
+                <div class="mets-tab" onclick="metsSwitchTab(this,'mets-panel-stmt')">View Statement</div>
+                <div class="mets-tab" onclick="metsSwitchTab(this,'mets-panel-usage')">View Usage</div>
+                <div class="mets-tab" onclick="metsSwitchTab(this,'mets-panel-comp')">Complimentary Report</div>
+                <div class="mets-tab" onclick="metsSwitchTab(this,'mets-panel-transit')" style="display:flex;align-items:center;gap:5px;"><svg width="12" height="12" viewBox="0 0 12 12" fill="none" style="vertical-align:middle"><circle cx="6" cy="6" r="5" stroke="#d97706" stroke-width="1.2"/><path d="M6 3.5v2.8l1.8 1.2" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Transit METS</div>
+                <div class="mets-tab" onclick="metsSwitchTab(this,'mets-panel-audit')">Audit Logs</div>
+            </div>
+            <div class="mets-tab-content">
+
+                <!-- Allocation Details Panel -->
+                <div id="mets-panel-alloc" class="mets-tbl-wrap">
+                    <table class="mets-tbl">
+                        <thead>
+                            <tr>
+                                <th style="width:160px;">Feature</th>
+                                <th style="width:185px;">Plan Type</th>
+                                <th>Committed METS <span class="mets-info-icon">i</span></th>
+                                <th>Allocated METS</th>
+                                <th>Cost Per Unit</th>
+                                <th>Complimentary</th>
+                                <th>Credited</th>
+                                <th>Avg Daily Consumption <span class="mets-info-icon">i</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Section: Communication -->
+                            <tr class="mets-section-hdr"><td colspan="8">Communication</td></tr>
+
+                            <!-- Email: 1 row -->
+                            <tr>
+                                <td><div class="mets-feat-cell"><span class="mets-feat-icon-sm"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="13" rx="2" stroke="#f59e0b" stroke-width="1.5"/><path d="M2 8l8 5 8-5" stroke="#f59e0b" stroke-width="1.5"/></svg></span>Email</div></td>
+                                <td><div class="mets-plan-cell"><span class="mets-radio active"></span>Standard</div></td>
+                                <td><span class="mets-pill">1,000<span class="mets-decimal">.000</span></span></td>
+                                <td><span class="mets-pill">-</span></td>
+                                <td><span class="mets-pill">11<span class="mets-decimal">.000</span></span></td>
+                                <td>1,100</td>
+                                <td><span class="mets-pill">1,191<span class="mets-decimal">.000</span></span></td>
+                                <td><span class="mets-pill">33<span class="mets-decimal">.333333</span></span></td>
+                            </tr>
+
+                            <!-- SMS Domestic: row 1 of 2 — Complimentary rowspan=2 -->
+                            <tr>
+                                <td rowspan="2" style="vertical-align:middle;"><div class="mets-feat-cell"><span class="mets-feat-icon-sm"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><rect x="3" y="3" width="14" height="11" rx="2" stroke="#ef4444" stroke-width="1.5"/><path d="M6 16l4-2 4 2" stroke="#ef4444" stroke-width="1.3"/><path d="M6 8h8M6 11h5" stroke="#ef4444" stroke-width="1.2" stroke-linecap="round"/></svg></span>SMS</div></td>
+                                <td><div class="mets-plan-cell"><span class="mets-radio active"></span>Domestic</div></td>
+                                <td><span class="mets-pill">0<span class="mets-decimal">.000</span></span></td>
+                                <td><span class="mets-pill">-</span></td>
+                                <td><span class="mets-pill">2<span class="mets-decimal">.000</span></span></td>
+                                <td rowspan="2" class="mets-span-cell">99</td>
+                                <td><span class="mets-pill">109<span class="mets-decimal">.000</span></span></td>
+                                <td><span class="mets-pill">0<span class="mets-decimal">.000</span></span></td>
+                            </tr>
+                            <!-- SMS International: row 2 of 2 -->
+                            <tr>
+                                <td><div class="mets-plan-cell"><span class="mets-radio"></span>International</div></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <!-- Complimentary cell skipped (rowspan) -->
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                            </tr>
+
+                            <!-- WhatsApp Utility: row 1 of 4 — Allocated & Complimentary rowspan=4 -->
+                            <tr>
+                                <td rowspan="4" style="vertical-align:middle;">
+                                    <div class="mets-feat-cell" style="flex-direction:column;align-items:flex-start;gap:4px;">
+                                        <div style="display:flex;align-items:center;gap:8px;">
+                                            <span class="mets-feat-icon-sm"><svg width="18" height="18" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#16a34a" stroke-width="1.5"/><path d="M13 7c-1-1-3-1.5-5-.5S5.5 10 6 12s2 3.5 4 3.5 3.5-1 4-2" stroke="#16a34a" stroke-width="1.3" stroke-linecap="round"/></svg></span>
+                                            WhatsApp
+                                        </div>
+                                        <div class="mets-country">🇮🇳 India <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="#6b7280" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                                    </div>
+                                </td>
+                                <td><div class="mets-plan-cell"><span class="mets-radio"></span>Utility</div></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td rowspan="4" class="mets-span-cell"><span class="mets-span-pill">-</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td rowspan="4" class="mets-span-cell">0</td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                            </tr>
+                            <!-- WhatsApp Service: row 2 of 4 -->
+                            <tr>
+                                <td><div class="mets-plan-cell"><span class="mets-radio"></span>Service</div></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                            </tr>
+                            <!-- WhatsApp Marketing: row 3 of 4 -->
+                            <tr>
+                                <td><div class="mets-plan-cell"><span class="mets-radio active"></span>Marketing</div></td>
+                                <td><span class="mets-pill">0<span class="mets-decimal">.000</span></span></td>
+                                <td><span class="mets-pill">0<span class="mets-decimal">.456565</span></span></td>
+                                <td><span class="mets-pill">43<span class="mets-decimal">.000</span></span></td>
+                                <td><span class="mets-pill">0<span class="mets-decimal">.000</span></span></td>
+                            </tr>
+                            <!-- WhatsApp Authentication: row 4 of 4 -->
+                            <tr>
+                                <td><div class="mets-plan-cell"><span class="mets-radio"></span>Authentication</div></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                                <td><span class="mets-xxxx">xxxx</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Other tab panels (hidden) -->
+                <div id="mets-panel-addon" style="display:none;padding:40px;text-align:center;color:#8b96b0;font-size:13px;">Add-On Limits — coming soon</div>
+                <div id="mets-panel-stmt" style="display:none;padding:40px;text-align:center;color:#8b96b0;font-size:13px;">View Statement — coming soon</div>
+                <div id="mets-panel-usage" style="display:none;padding:40px;text-align:center;color:#8b96b0;font-size:13px;">View Usage — coming soon</div>
+                <div id="mets-panel-comp" style="display:none;padding:40px;text-align:center;color:#8b96b0;font-size:13px;">Complimentary Report — coming soon</div>
+
+                <!-- Transit METS Panel -->
+                <div id="mets-panel-transit" style="display:none;">
+
+                    <!-- Top bar: date range + download -->
+                    <div style="display:flex;align-items:center;justify-content:flex-end;gap:8px;padding:12px 16px 0;">
+                        <div style="display:flex;align-items:center;gap:6px;border:1px solid #e5e9f2;border-radius:6px;padding:5px 10px;font-size:12px;color:#374151;background:#fff;cursor:pointer;">
+                            <svg width="13" height="13" viewBox="0 0 12 12" fill="none"><rect x="1" y="2" width="10" height="9" rx="1.5" stroke="#6b7280" stroke-width="1.2"/><path d="M4 1v2M8 1v2M1 5h10" stroke="#6b7280" stroke-width="1.2" stroke-linecap="round"/></svg>
+                            09 Jun 2026 – 15 Jun 2026
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 3.5l3 3 3-3" stroke="#6b7280" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                        <button style="background:#fff;border:1px solid #e5e9f2;border-radius:6px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                        </button>
+                    </div>
+
+                    <!-- Table -->
+                    <div style="overflow-x:auto;padding:12px 0 0;">
+                        <table style="width:100%;border-collapse:collapse;font-size:12.5px;">
+                            <thead>
+                                <tr style="border-bottom:1px solid #e5e9f2;">
+                                    <th style="padding:10px 18px;text-align:left;font-weight:600;color:#1c2534;font-size:12.5px;white-space:nowrap;">Transaction Date</th>
+                                    <th style="padding:10px 18px;text-align:left;font-weight:600;color:#1c2534;font-size:12.5px;white-space:nowrap;">Feature</th>
+                                    <th style="padding:10px 18px;text-align:left;font-weight:600;color:#1c2534;font-size:12.5px;white-space:nowrap;">Type</th>
+                                    <th style="padding:10px 18px;text-align:left;font-weight:600;color:#1c2534;font-size:12.5px;white-space:nowrap;">Estimated Credits</th>
+                                    <th style="padding:10px 18px;text-align:left;font-weight:600;color:#1c2534;font-size:12.5px;white-space:nowrap;">Actual Credits</th>
+                                    <th style="padding:10px 18px;text-align:left;font-weight:600;color:#1c2534;font-size:12.5px;white-space:nowrap;">Delta Released</th>
+                                    <th style="padding:10px 18px;text-align:left;font-weight:600;color:#1c2534;font-size:12.5px;white-space:nowrap;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr style="border-bottom:1px solid #f3f4f6;">
+                                    <td style="padding:12px 18px;color:#374151;white-space:nowrap;">15/06/2026, 10:32 AM</td>
+                                    <td style="padding:12px 18px;color:#374151;">SMS Domestic</td>
+                                    <td style="padding:12px 18px;"><span style="background:#e0e7ff;color:#3730a3;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500;">Transactional</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">8<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#9ca3af;">-</td>
+                                    <td style="padding:12px 18px;color:#9ca3af;">-</td>
+                                    <td style="padding:12px 18px;"><span class="mets-status-badge mets-status-active">● Active Hold</span></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #f3f4f6;">
+                                    <td style="padding:12px 18px;color:#374151;white-space:nowrap;">15/06/2026, 08:15 AM</td>
+                                    <td style="padding:12px 18px;color:#374151;">SMS Domestic</td>
+                                    <td style="padding:12px 18px;"><span style="background:#e0e7ff;color:#3730a3;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500;">Transactional</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">3<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">3<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#059669;font-weight:500;">0<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;"><span class="mets-status-badge mets-status-settled">✓ Settled</span></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #f3f4f6;">
+                                    <td style="padding:12px 18px;color:#374151;white-space:nowrap;">15/06/2026, 09:05 AM</td>
+                                    <td style="padding:12px 18px;color:#374151;">SMS Domestic</td>
+                                    <td style="padding:12px 18px;"><span style="background:#fce7f3;color:#9d174d;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500;">Promotional</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">4<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#9ca3af;">-</td>
+                                    <td style="padding:12px 18px;color:#9ca3af;">-</td>
+                                    <td style="padding:12px 18px;"><span class="mets-status-badge mets-status-active">● Active Hold</span></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #f3f4f6;">
+                                    <td style="padding:12px 18px;color:#374151;white-space:nowrap;">15/06/2026, 09:45 AM</td>
+                                    <td style="padding:12px 18px;color:#374151;">SMS International</td>
+                                    <td style="padding:12px 18px;"><span style="background:#ede9fe;color:#5b21b6;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500;">International</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">4<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#9ca3af;">-</td>
+                                    <td style="padding:12px 18px;color:#9ca3af;">-</td>
+                                    <td style="padding:12px 18px;"><span class="mets-status-badge mets-status-active">● Active Hold</span></td>
+                                </tr>
+                                <tr style="border-bottom:1px solid #f3f4f6;">
+                                    <td style="padding:12px 18px;color:#374151;white-space:nowrap;">15/06/2026, 06:01 AM</td>
+                                    <td style="padding:12px 18px;color:#374151;">SMS Domestic</td>
+                                    <td style="padding:12px 18px;"><span style="background:#e0e7ff;color:#3730a3;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500;">Transactional</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">1<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">1<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#9ca3af;">0<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;"><span class="mets-status-badge mets-status-settled">✓ Settled</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px 18px;color:#374151;white-space:nowrap;">15/06/2026, 07:22 AM</td>
+                                    <td style="padding:12px 18px;color:#374151;">SMS Domestic</td>
+                                    <td style="padding:12px 18px;"><span style="background:#fce7f3;color:#9d174d;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500;">Promotional</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">4<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">3<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#059669;font-weight:500;">+1<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;"><span class="mets-status-badge mets-status-settled">✓ Settled</span></td>
+                                </tr>
+                                <tr>
+                                    <td style="padding:12px 18px;color:#374151;white-space:nowrap;">15/06/2026, 11:50 AM</td>
+                                    <td style="padding:12px 18px;color:#374151;">SMS Domestic</td>
+                                    <td style="padding:12px 18px;"><span style="background:#e0e7ff;color:#3730a3;border-radius:20px;padding:3px 10px;font-size:11.5px;font-weight:500;">Transactional</span></td>
+                                    <td style="padding:12px 18px;color:#374151;">5<span style="color:#9ca3af;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#dc2626;font-weight:500;">7<span style="color:#fca5a5;">.000</span></td>
+                                    <td style="padding:12px 18px;color:#dc2626;font-weight:500;">-2<span style="color:#fca5a5;">.000</span></td>
+                                    <td style="padding:12px 18px;"><span class="mets-status-badge mets-status-overconsumed">⚠ Over-consumed</span></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="padding:14px 18px;">
+                        <button style="background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:6px 14px;font-size:12px;color:#374151;cursor:pointer;font-weight:500;">Show Total Records</button>
+                    </div>
+                </div>
+
+                <div id="mets-panel-audit" style="display:none;padding:40px;text-align:center;color:#8b96b0;font-size:13px;">Audit Logs — coming soon</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    (function(){
+        var _metsObserver = null;
+        function _syncMetsLeft() {
+            var sb = document.getElementById('sidebar');
+            var overlay = document.getElementById('mets-overlay');
+            if (sb && overlay) overlay.style.left = sb.getBoundingClientRect().width + 'px';
+        }
+        window.openMetsOverlay = function() {
+            var overlay = document.getElementById('mets-overlay');
+            _syncMetsLeft();
+            overlay.style.display = 'block';
+            // Watch sidebar width changes (expand/collapse)
+            var sb = document.getElementById('sidebar');
+            if (sb && window.ResizeObserver && !_metsObserver) {
+                _metsObserver = new ResizeObserver(_syncMetsLeft);
+                _metsObserver.observe(sb);
+            }
+        };
+        window.closeMetsOverlay = function() {
+            document.getElementById('mets-overlay').style.display = 'none';
+            if (_metsObserver) { _metsObserver.disconnect(); _metsObserver = null; }
+        };
+    })();
+    function metsSwitchTab(el, panelId) {
+        // Update tabs
+        el.closest('.mets-tabs-row').querySelectorAll('.mets-tab').forEach(function(t){ t.classList.remove('active'); });
+        el.classList.add('active');
+        // Update panels
+        ['mets-panel-alloc','mets-panel-addon','mets-panel-stmt','mets-panel-usage','mets-panel-comp','mets-panel-transit','mets-panel-audit'].forEach(function(id){
+            var p = document.getElementById(id);
+            if (p) p.style.display = (id === panelId) ? 'block' : 'none';
+        });
+    }
+</script>
 </body>
 </html>
